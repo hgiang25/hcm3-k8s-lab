@@ -21,7 +21,6 @@ on:
           - digital-identity-service
           - profile-service
           - client
-          - redis
 
 env:
   K8S_NAMESPACE: ecommerce
@@ -73,9 +72,7 @@ jobs:
               "s|:latest|:${TAG}|g" {} \;
           fi
 
-      - name: Deploy Redis (in-cluster)
-        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'redis' }}
-        run: kubectl apply -f k8s/redis/
+
 
       - name: Deploy API Gateway
         if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'api-gateway' }}
