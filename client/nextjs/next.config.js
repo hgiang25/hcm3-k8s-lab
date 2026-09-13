@@ -5,6 +5,16 @@ const nextConfig = {
   },
   images: {
     domains: ['localhost', 'host.docker.internal', 'cdn'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      },
+    ],
   },
   reactStrictMode: true,
 };

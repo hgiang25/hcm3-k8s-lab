@@ -13,7 +13,8 @@ const addProductToPrismaDBAndRedis = async (
     prisma: PrismaClient,
     redisClient: NodeRedisClientType,
     json: any,
-    imageSuffixPath: string) => {
+    imageSuffixPath: string,
+    cdnUrlPrefix: string) => {
 
     let product: Prisma.ProductCreateInput | null = null;
 
@@ -22,7 +23,7 @@ const addProductToPrismaDBAndRedis = async (
         product = {
             //custom
             productId: json.productId,
-            styleImages_default_imageURL: `http://${process.env.CDN_HOST}:${process.env.CDN_PORT}/${imageSuffixPath}`,
+            styleImages_default_imageURL: `${cdnUrlPrefix}/${imageSuffixPath}`,
             createdBy: 'ADMIN',
             stockQty: CONFIG.DEFAULT_PRODUCT_QTY,
 
@@ -78,9 +79,17 @@ const addProductsToDatabase = async (
         for (let i of folderCountLoopArr) { //for-of loop for async await
             const folderNum = (i + 1).toString().padStart(2, '0');
 
-            console.log(`CDN_HOST_DEBUG: ${process.env.CDN_HOST_DEBUG}, CDN_HOST: ${process.env.CDN_HOST}`);
             const localHost = process.env.CDN_HOST_DEBUG || process.env.CDN_HOST;
-            const remoteURLPrefix = `http://${localHost}:${process.env.CDN_PORT}`;
+            
+            // Prefer S3 CDN URL if provided, otherwise fallback to local/debug CDN
+            const remoteURLPrefix = process.env.S3_CDN_URL
+                ? process.env.S3_CDN_URL.replace(/\/$/, '')
+                : `http://${localHost}:${process.env.CDN_PORT}`;
+            
+            // For the product itself, use S3_CDN_URL or standard CDN_HOST
+            const finalCdnUrlPrefix = process.env.S3_CDN_URL
+                ? process.env.S3_CDN_URL.replace(/\/$/, '')
+                : `http://${process.env.CDN_HOST}:${process.env.CDN_PORT}`;
 
             const remoteURLProductList = `${remoteURLPrefix}/products/${folderNum}/products-list.txt`;
             console.log(remoteURLProductList);
@@ -98,7 +107,7 @@ const addProductsToDatabase = async (
                     const json = await fetchZipFileJSON(remoteURLProduct);
                     if (json) {
                         const imageSuffixPath = `${productPath}/${FIXED_IMG_NAME}`;
-                        const product = await addProductToPrismaDBAndRedis(prisma, redisClient, json, imageSuffixPath);
+                        const product = await addProductToPrismaDBAndRedis(prisma, redisClient, json, imageSuffixPath, finalCdnUrlPrefix);
                         if (product) {
                             products.push(product);
                         }

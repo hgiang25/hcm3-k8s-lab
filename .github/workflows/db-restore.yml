@@ -40,7 +40,7 @@ jobs:
         run: |
           if [ -z "${{ github.event.inputs.backup_timestamp }}" ]; then
             # Get the latest backup folder
-            LATEST=$(aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/postgres/ | sort | tail -n 1 | awk '{print $2}')
+            LATEST=$(aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/postgres/ --endpoint-url=${{ secrets.S3_ENDPOINT }} | sort | tail -n 1 | awk '{print $2}')
             echo "Using latest backup: ${LATEST}"
             echo "folder=${LATEST}" >> $GITHUB_OUTPUT
           else
@@ -52,7 +52,8 @@ jobs:
           mkdir -p backups
           aws s3 cp \
             "s3://${{ secrets.S3_BACKUP_BUCKET }}/postgres/${{ steps.backup_path.outputs.folder }}database.dump.gz" \
-            backups/database.dump.gz
+            backups/database.dump.gz \
+            --endpoint-url=${{ secrets.S3_ENDPOINT }}
 
           echo "Downloaded backup:"
           ls -lh backups/
@@ -106,7 +107,7 @@ jobs:
         id: backup_path
         run: |
           if [ -z "${{ github.event.inputs.backup_timestamp }}" ]; then
-            LATEST=$(aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/mongodb/ | sort | tail -n 1 | awk '{print $2}')
+            LATEST=$(aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/mongodb/ --endpoint-url=${{ secrets.S3_ENDPOINT }} | sort | tail -n 1 | awk '{print $2}')
             echo "Using latest backup: ${LATEST}"
             echo "folder=${LATEST}" >> $GITHUB_OUTPUT
           else
@@ -118,7 +119,8 @@ jobs:
           mkdir -p backups
           aws s3 cp \
             "s3://${{ secrets.S3_BACKUP_BUCKET }}/mongodb/${{ steps.backup_path.outputs.folder }}mongodb.archive.gz" \
-            backups/mongodb.archive.gz
+            backups/mongodb.archive.gz \
+            --endpoint-url=${{ secrets.S3_ENDPOINT }}
 
           echo "Downloaded backup:"
           ls -lh backups/

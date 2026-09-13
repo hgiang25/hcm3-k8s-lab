@@ -1,0 +1,33 @@
+name: Sync CDN to S3
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'cdn/fashion-dataset/**'
+  workflow_dispatch: # Cho phép chạy bằng tay
+
+jobs:
+  upload-to-s3:
+    name: Sync Static Assets to CMC Cloud S3
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'ap-southeast-1' }}
+
+      - name: Sync CDN folder to S3
+        run: |
+          echo "Starting S3 Sync for CDN assets..."
+          # Dùng s3 sync để chỉ upload những file bị thay đổi (tiết kiệm băng thông)
+          # Thêm --acl public-read nếu bucket yêu cầu public-read object level
+          aws s3 sync cdn/fashion-dataset/ s3://${{ secrets.S3_CDN_BUCKET }}/ --endpoint-url=${{ secrets.S3_ENDPOINT }}
+          echo "CDN sync completed successfully!"
