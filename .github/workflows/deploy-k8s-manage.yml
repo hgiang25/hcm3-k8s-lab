@@ -1,0 +1,85 @@
+name: Deploy to Kubernetes - Manage Cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to deploy (e.g. latest, sha-abc123)'
+        required: false
+        default: 'latest'
+      deploy_target:
+        description: 'What to deploy?'
+        required: true
+        type: choice
+        options:
+          - all
+          - cdn
+          - logging-stack
+          - ingress
+
+env:
+  K8S_NAMESPACE: ecommerce
+  REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
+jobs:
+  deploy:
+    name: Deploy to K8s Manage Cluster
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_MANAGE }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Verify cluster connection
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Create namespace (if not exists)
+        run: kubectl apply -f k8s/namespace.yaml
+
+      - name: Replace image tags in manifests
+        run: |
+          TAG="${{ github.event.inputs.image_tag }}"
+          REGISTRY="${{ env.REGISTRY }}"
+
+          find k8s/ -name '*.yaml' -exec sed -i \
+            "s|\${CONTAINER_REGISTRY}|${REGISTRY}|g" {} \;
+
+          if [ "$TAG" != "latest" ]; then
+            find k8s/ -name '*.yaml' -exec sed -i \
+              "s|:latest|:${TAG}|g" {} \;
+          fi
+
+      - name: Deploy CDN
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'cdn' }}
+        run: kubectl apply -f k8s/cdn/
+
+      - name: Deploy Logging Stack
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'logging-stack' }}
+        run: kubectl apply -f k8s/logging/
+
+      - name: Deploy Ingress
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'ingress' }}
+        run: |
+          # Only apply if you have a specific ingress for the manage cluster
+          if [ -f k8s/ingress-manage.yaml ]; then
+            kubectl apply -f k8s/ingress-manage.yaml
+          fi
+
+      - name: Show deployment status
+        run: |
+          echo "=== Pods ==="
+          kubectl -n ${{ env.K8S_NAMESPACE }} get pods -o wide
+          echo ""
+          echo "=== Services ==="
+          kubectl -n ${{ env.K8S_NAMESPACE }} get svc
+          echo ""
+          echo "=== Ingress ==="
+          kubectl -n ${{ env.K8S_NAMESPACE }} get ingress

@@ -1,4 +1,4 @@
-name: Deploy to Kubernetes (CMC Cloud)
+name: Deploy to Kubernetes - App Cluster
 
 on:
   workflow_dispatch:
@@ -21,8 +21,7 @@ on:
           - digital-identity-service
           - profile-service
           - client
-          - cdn
-          - logging-stack
+          - redis
 
 env:
   K8S_NAMESPACE: ecommerce
@@ -30,7 +29,7 @@ env:
 
 jobs:
   deploy:
-    name: Deploy to K8s
+    name: Deploy to K8s App Cluster
     runs-on: ubuntu-latest
 
     steps:
@@ -40,7 +39,7 @@ jobs:
       - name: Configure kubectl
         run: |
           mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          echo "${{ secrets.KUBE_CONFIG_APP }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
       - name: Verify cluster connection
@@ -75,7 +74,7 @@ jobs:
           fi
 
       - name: Deploy Redis (in-cluster)
-        if: ${{ github.event.inputs.deploy_target == 'all' }}
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'redis' }}
         run: kubectl apply -f k8s/redis/
 
       - name: Deploy API Gateway
@@ -110,17 +109,9 @@ jobs:
         if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'client' }}
         run: kubectl apply -f k8s/client/
 
-      - name: Deploy CDN
-        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'cdn' }}
-        run: kubectl apply -f k8s/cdn/
-
       - name: Deploy Ingress
         if: ${{ github.event.inputs.deploy_target == 'all' }}
         run: kubectl apply -f k8s/ingress.yaml
-
-      - name: Deploy Logging Stack
-        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'logging-stack' }}
-        run: kubectl apply -f k8s/logging/
 
       - name: Wait for rollout
         if: ${{ github.event.inputs.deploy_target == 'all' }}
