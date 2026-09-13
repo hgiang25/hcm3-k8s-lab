@@ -1,0 +1,148 @@
+name: Database Restore
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_timestamp:
+        description: 'Backup timestamp folder (e.g. 2026-09-13_02-00-00). Leave empty for latest.'
+        required: false
+        default: ''
+      target_database:
+        description: 'Which database to restore?'
+        required: true
+        type: choice
+        options:
+          - postgresql
+          - mongodb
+          - both
+
+jobs:
+  restore-postgresql:
+    name: Restore PostgreSQL
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.target_database == 'postgresql' || github.event.inputs.target_database == 'both' }}
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'ap-southeast-1' }}
+
+      - name: Determine backup path
+        id: backup_path
+        run: |
+          if [ -z "${{ github.event.inputs.backup_timestamp }}" ]; then
+            # Get the latest backup folder
+            LATEST=$(aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/postgres/ | sort | tail -n 1 | awk '{print $2}')
+            echo "Using latest backup: ${LATEST}"
+            echo "folder=${LATEST}" >> $GITHUB_OUTPUT
+          else
+            echo "folder=${{ github.event.inputs.backup_timestamp }}/" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download backup from S3
+        run: |
+          mkdir -p backups
+          aws s3 cp \
+            "s3://${{ secrets.S3_BACKUP_BUCKET }}/postgres/${{ steps.backup_path.outputs.folder }}database.dump.gz" \
+            backups/database.dump.gz
+
+          echo "Downloaded backup:"
+          ls -lh backups/
+
+      - name: Extract backup
+        run: gunzip backups/database.dump.gz
+
+      - name: Restore database
+        env:
+          PGHOST: ${{ secrets.RESTORE_DB_HOST }}
+          PGPORT: ${{ secrets.RESTORE_DB_PORT }}
+          PGDATABASE: ${{ secrets.RESTORE_DB_NAME }}
+          PGUSER: ${{ secrets.RESTORE_DB_USER }}
+          PGPASSWORD: ${{ secrets.RESTORE_DB_PASSWORD }}
+        run: |
+          echo "Starting PostgreSQL restore..."
+
+          pg_restore \
+            --clean \
+            --if-exists \
+            --no-owner \
+            --no-acl \
+            --verbose \
+            --dbname="$PGDATABASE" \
+            backups/database.dump
+
+          echo "PostgreSQL restore completed."
+
+      - name: Verify restore
+        env:
+          PGHOST: ${{ secrets.RESTORE_DB_HOST }}
+          PGPORT: ${{ secrets.RESTORE_DB_PORT }}
+          PGDATABASE: ${{ secrets.RESTORE_DB_NAME }}
+          PGUSER: ${{ secrets.RESTORE_DB_USER }}
+          PGPASSWORD: ${{ secrets.RESTORE_DB_PASSWORD }}
+        run: |
+          echo "=== Tables ==="
+          psql -c "\dt"
+          echo "=== Row counts ==="
+          psql -c "SELECT schemaname, relname, n_live_tup FROM pg_stat_user_tables ORDER BY n_live_tup DESC;"
+
+  restore-mongodb:
+    name: Restore MongoDB
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.target_database == 'mongodb' || github.event.inputs.target_database == 'both' }}
+
+    steps:
+      - name: Install MongoDB tools
+        run: |
+          wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
+          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-database-tools
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'ap-southeast-1' }}
+
+      - name: Determine backup path
+        id: backup_path
+        run: |
+          if [ -z "${{ github.event.inputs.backup_timestamp }}" ]; then
+            LATEST=$(aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/mongodb/ | sort | tail -n 1 | awk '{print $2}')
+            echo "Using latest backup: ${LATEST}"
+            echo "folder=${LATEST}" >> $GITHUB_OUTPUT
+          else
+            echo "folder=${{ github.event.inputs.backup_timestamp }}/" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download backup from S3
+        run: |
+          mkdir -p backups
+          aws s3 cp \
+            "s3://${{ secrets.S3_BACKUP_BUCKET }}/mongodb/${{ steps.backup_path.outputs.folder }}mongodb.archive.gz" \
+            backups/mongodb.archive.gz
+
+          echo "Downloaded backup:"
+          ls -lh backups/
+
+      - name: Restore MongoDB
+        run: |
+          echo "Starting MongoDB restore..."
+
+          mongorestore \
+            --uri="${{ secrets.RESTORE_MONGO_URI }}" \
+            --gzip \
+            --archive="backups/mongodb.archive.gz" \
+            --drop
+
+          echo "MongoDB restore completed."

@@ -1,0 +1,137 @@
+name: Database Backup
+
+on:
+  workflow_dispatch: # Manual trigger
+  schedule:
+    - cron: '0 19 * * *' # 19:00 UTC = 02:00 UTC+7 (Vietnam)
+
+env:
+  BACKUP_RETENTION_DAYS: 30
+
+jobs:
+  backup-postgresql:
+    name: Backup PostgreSQL
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Create backup directory
+        run: mkdir -p backups
+
+      - name: Dump PostgreSQL database
+        env:
+          PGHOST: ${{ secrets.DB_HOST }}
+          PGPORT: ${{ secrets.DB_PORT }}
+          PGDATABASE: ${{ secrets.DB_NAME }}
+          PGUSER: ${{ secrets.DB_USER }}
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          echo "Starting PostgreSQL backup..."
+
+          pg_dump \
+            --format=custom \
+            --no-owner \
+            --no-acl \
+            --verbose \
+            --file="backups/database.dump"
+
+          echo "Backup completed successfully."
+
+      - name: Compress backup
+        run: |
+          gzip backups/database.dump
+          ls -lh backups/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'ap-southeast-1' }}
+
+      - name: Upload backup to S3
+        run: |
+          TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+
+          aws s3 cp \
+            backups/database.dump.gz \
+            s3://${{ secrets.S3_BACKUP_BUCKET }}/postgres/${TIMESTAMP}/database.dump.gz
+
+          echo "Backup uploaded to s3://${{ secrets.S3_BACKUP_BUCKET }}/postgres/${TIMESTAMP}/"
+
+      - name: Cleanup old backups (older than ${{ env.BACKUP_RETENTION_DAYS }} days)
+        run: |
+          CUTOFF_DATE=$(date -d "-${{ env.BACKUP_RETENTION_DAYS }} days" +"%Y-%m-%d")
+
+          aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/postgres/ | while read -r line; do
+            FOLDER_DATE=$(echo "$line" | awk '{print $2}' | cut -d'/' -f1 | cut -d'_' -f1)
+            if [[ "$FOLDER_DATE" < "$CUTOFF_DATE" ]]; then
+              FOLDER_NAME=$(echo "$line" | awk '{print $2}')
+              echo "Deleting old backup: $FOLDER_NAME"
+              aws s3 rm "s3://${{ secrets.S3_BACKUP_BUCKET }}/postgres/${FOLDER_NAME}" --recursive
+            fi
+          done
+
+      - name: Upload backup as GitHub Artifact (fallback)
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres-backup-${{ github.run_number }}
+          path: backups/database.dump.gz
+          retention-days: 7
+
+  backup-mongodb:
+    name: Backup MongoDB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install MongoDB tools
+        run: |
+          wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
+          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+          sudo apt-get update
+          sudo apt-get install -y mongodb-database-tools
+
+      - name: Create backup directory
+        run: mkdir -p backups
+
+      - name: Dump MongoDB database
+        run: |
+          echo "Starting MongoDB backup..."
+
+          mongodump \
+            --uri="${{ secrets.MONGO_URI }}" \
+            --gzip \
+            --archive="backups/mongodb.archive.gz"
+
+          echo "MongoDB backup completed."
+
+      - name: Show backup size
+        run: ls -lh backups/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'ap-southeast-1' }}
+
+      - name: Upload backup to S3
+        run: |
+          TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+
+          aws s3 cp \
+            backups/mongodb.archive.gz \
+            s3://${{ secrets.S3_BACKUP_BUCKET }}/mongodb/${TIMESTAMP}/mongodb.archive.gz
+
+          echo "MongoDB backup uploaded to S3."
+
+      - name: Upload backup as GitHub Artifact (fallback)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mongodb-backup-${{ github.run_number }}
+          path: backups/mongodb.archive.gz
+          retention-days: 7
