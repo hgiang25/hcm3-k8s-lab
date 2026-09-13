@@ -61,12 +61,6 @@ jobs:
         run: gunzip backups/database.dump.gz
 
       - name: Restore database
-        env:
-          PGHOST: ${{ secrets.RESTORE_DB_HOST }}
-          PGPORT: ${{ secrets.RESTORE_DB_PORT }}
-          PGDATABASE: ${{ secrets.RESTORE_DB_NAME }}
-          PGUSER: ${{ secrets.RESTORE_DB_USER }}
-          PGPASSWORD: ${{ secrets.RESTORE_DB_PASSWORD }}
         run: |
           echo "Starting PostgreSQL restore..."
 
@@ -76,23 +70,17 @@ jobs:
             --no-owner \
             --no-acl \
             --verbose \
-            --dbname="$PGDATABASE" \
+            --dbname="${{ secrets.RESTORE_POSTGRES_URL }}" \
             backups/database.dump
 
           echo "PostgreSQL restore completed."
 
       - name: Verify restore
-        env:
-          PGHOST: ${{ secrets.RESTORE_DB_HOST }}
-          PGPORT: ${{ secrets.RESTORE_DB_PORT }}
-          PGDATABASE: ${{ secrets.RESTORE_DB_NAME }}
-          PGUSER: ${{ secrets.RESTORE_DB_USER }}
-          PGPASSWORD: ${{ secrets.RESTORE_DB_PASSWORD }}
         run: |
           echo "=== Tables ==="
-          psql -c "\dt"
+          psql "${{ secrets.RESTORE_POSTGRES_URL }}" -c "\dt"
           echo "=== Row counts ==="
-          psql -c "SELECT schemaname, relname, n_live_tup FROM pg_stat_user_tables ORDER BY n_live_tup DESC;"
+          psql "${{ secrets.RESTORE_POSTGRES_URL }}" -c "SELECT schemaname, relname, n_live_tup FROM pg_stat_user_tables ORDER BY n_live_tup DESC;"
 
   restore-mongodb:
     name: Restore MongoDB
@@ -140,7 +128,7 @@ jobs:
           echo "Starting MongoDB restore..."
 
           mongorestore \
-            --uri="${{ secrets.RESTORE_MONGO_URI }}" \
+            --uri="${{ secrets.RESTORE_MONGO_URL }}" \
             --gzip \
             --archive="backups/mongodb.archive.gz" \
             --drop

@@ -23,16 +23,10 @@ jobs:
         run: mkdir -p backups
 
       - name: Dump PostgreSQL database
-        env:
-          PGHOST: ${{ secrets.DB_HOST }}
-          PGPORT: ${{ secrets.DB_PORT }}
-          PGDATABASE: ${{ secrets.DB_NAME }}
-          PGUSER: ${{ secrets.DB_USER }}
-          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
           echo "Starting PostgreSQL backup..."
 
-          pg_dump \
+          pg_dump "${{ secrets.POSTGRES_URL }}" \
             --format=custom \
             --no-owner \
             --no-acl \
@@ -103,7 +97,7 @@ jobs:
           echo "Starting MongoDB backup..."
 
           mongodump \
-            --uri="${{ secrets.MONGO_URI }}" \
+            --uri="${{ secrets.MONGO_URL }}" \
             --gzip \
             --archive="backups/mongodb.archive.gz"
 
