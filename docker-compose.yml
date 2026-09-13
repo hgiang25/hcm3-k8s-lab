@@ -77,6 +77,8 @@ services:
         BUILD_BASE_PATH: server/src/services/orders
     env_file:
       - ./.env
+    environment:
+      - SERVICE_NAME=orders-service
     depends_on:
       - redis-server
       - mongodb-server
@@ -90,6 +92,8 @@ services:
         BUILD_BASE_PATH: server/src/services/order-history
     env_file:
       - ./.env
+    environment:
+      - SERVICE_NAME=order-history-service
     depends_on:
       - redis-server
       - mongodb-server
@@ -103,6 +107,8 @@ services:
         BUILD_BASE_PATH: server/src/services/products
     env_file:
       - ./.env
+    environment:
+      - SERVICE_NAME=products-service
     depends_on:
       - redis-server
       - mongodb-server
@@ -116,6 +122,8 @@ services:
         BUILD_BASE_PATH: server/src/services/payments
     env_file:
       - ./.env
+    environment:
+      - SERVICE_NAME=payments-service
     depends_on:
       - redis-server
       - mongodb-server
@@ -130,6 +138,8 @@ services:
         BUILD_BASE_PATH: server/src/services/digital-identity
     env_file:
       - ./.env
+    environment:
+      - SERVICE_NAME=digital-identity-service
     depends_on:
       - redis-server
       - mongodb-server
@@ -144,6 +154,8 @@ services:
         BUILD_BASE_PATH: server/src/services/profile
     env_file:
       - ./.env
+    environment:
+      - SERVICE_NAME=profile-service
     depends_on:
       - redis-server
       - mongodb-server
@@ -160,6 +172,8 @@ services:
       - '${API_GATEWAY_PORT}:${API_GATEWAY_PORT}'
     env_file:
       - ./.env
+    environment:
+      - SERVICE_NAME=api-gateway
     depends_on:
       - orders-service
       - order-history-service
@@ -186,6 +200,46 @@ services:
       - api-gateway
       - cdn
 
+  # ── PLG Logging Stack ──────────────────────────────────────────
+  loki:
+    container_name: loki
+    image: grafana/loki:2.9.4
+    ports:
+      - '3100:3100'
+    volumes:
+      - ./logging/loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/tmp/loki
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:2.9.4
+    volumes:
+      - ./logging/promtail-config.yml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:10.3.1
+    ports:
+      - '${GRAFANA_PORT:-3200}:3000'
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./logging/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    depends_on:
+      - loki
+
 volumes:
   redis-data:
   mongodb-data:
+  loki-data:
+  grafana-data:
+
