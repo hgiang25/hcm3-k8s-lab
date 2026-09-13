@@ -296,3 +296,68 @@ jobs:
             ${{ env.REGISTRY }}/cdn:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy-to-k8s:
+    name: Auto-Deploy to K8s
+    needs:
+      - detect-changes
+      - build-api-gateway
+      - build-orders
+      - build-order-history
+      - build-products
+      - build-payments
+      - build-digital-identity
+      - build-profile
+      - build-client
+    if: |
+      always() && 
+      (needs.detect-changes.outputs.api-gateway == 'true' || 
+       needs.detect-changes.outputs.orders == 'true' ||
+       needs.detect-changes.outputs.order-history == 'true' ||
+       needs.detect-changes.outputs.products == 'true' ||
+       needs.detect-changes.outputs.payments == 'true' ||
+       needs.detect-changes.outputs.digital-identity == 'true' ||
+       needs.detect-changes.outputs.profile == 'true' ||
+       needs.detect-changes.outputs.client == 'true') &&
+      !contains(join(needs.*.result, ','), 'failure') &&
+      !contains(join(needs.*.result, ','), 'cancelled')
+    runs-on: self-hosted
+    env:
+      REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+      TAG: ${{ github.sha }}
+      NAMESPACE: ecommerce
+    steps:
+      - name: Configure kubectl context
+        run: echo "Assuming self-hosted runner has kubectl configured for the app cluster"
+
+      - name: Deploy API Gateway
+        if: ${{ needs.detect-changes.outputs.api-gateway == 'true' }}
+        run: kubectl set image deployment/api-gateway api-gateway=${REGISTRY}/api-gateway:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Orders Service
+        if: ${{ needs.detect-changes.outputs.orders == 'true' }}
+        run: kubectl set image deployment/orders-service orders-service=${REGISTRY}/orders-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Order History Service
+        if: ${{ needs.detect-changes.outputs.order-history == 'true' }}
+        run: kubectl set image deployment/order-history-service order-history-service=${REGISTRY}/order-history-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Products Service
+        if: ${{ needs.detect-changes.outputs.products == 'true' }}
+        run: kubectl set image deployment/products-service products-service=${REGISTRY}/products-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Payments Service
+        if: ${{ needs.detect-changes.outputs.payments == 'true' }}
+        run: kubectl set image deployment/payments-service payments-service=${REGISTRY}/payments-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Digital Identity Service
+        if: ${{ needs.detect-changes.outputs.digital-identity == 'true' }}
+        run: kubectl set image deployment/digital-identity-service digital-identity-service=${REGISTRY}/digital-identity-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Profile Service
+        if: ${{ needs.detect-changes.outputs.profile == 'true' }}
+        run: kubectl set image deployment/profile-service profile-service=${REGISTRY}/profile-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Client (Frontend)
+        if: ${{ needs.detect-changes.outputs.client == 'true' }}
+        run: kubectl set image deployment/client client=${REGISTRY}/client:${TAG} -n ${NAMESPACE}
