@@ -1,0 +1,144 @@
+name: Deploy to Kubernetes (CMC Cloud)
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to deploy (e.g. latest, sha-abc123)'
+        required: false
+        default: 'latest'
+      deploy_target:
+        description: 'What to deploy?'
+        required: true
+        type: choice
+        options:
+          - all
+          - api-gateway
+          - orders-service
+          - order-history-service
+          - products-service
+          - payments-service
+          - digital-identity-service
+          - profile-service
+          - client
+          - cdn
+          - logging-stack
+
+env:
+  K8S_NAMESPACE: ecommerce
+  REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
+jobs:
+  deploy:
+    name: Deploy to K8s
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Verify cluster connection
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Create namespace (if not exists)
+        run: kubectl apply -f k8s/namespace.yaml
+
+      - name: Apply ConfigMap and Secrets
+        run: |
+          kubectl apply -f k8s/configmap.yaml
+          # Secrets should be pre-created via CLI, but apply template if exists
+          if [ -f k8s/secrets.yaml ]; then
+            kubectl apply -f k8s/secrets.yaml
+          fi
+
+      - name: Replace image tags in manifests
+        run: |
+          TAG="${{ github.event.inputs.image_tag }}"
+          REGISTRY="${{ env.REGISTRY }}"
+
+          # Replace ${CONTAINER_REGISTRY} placeholder with actual registry
+          find k8s/ -name '*.yaml' -exec sed -i \
+            "s|\${CONTAINER_REGISTRY}|${REGISTRY}|g" {} \;
+
+          # Replace :latest with the specified tag
+          if [ "$TAG" != "latest" ]; then
+            find k8s/ -name '*.yaml' -exec sed -i \
+              "s|:latest|:${TAG}|g" {} \;
+          fi
+
+      - name: Deploy Redis (in-cluster)
+        if: ${{ github.event.inputs.deploy_target == 'all' }}
+        run: kubectl apply -f k8s/redis/
+
+      - name: Deploy API Gateway
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'api-gateway' }}
+        run: kubectl apply -f k8s/api-gateway/
+
+      - name: Deploy Orders Service
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'orders-service' }}
+        run: kubectl apply -f k8s/orders-service/
+
+      - name: Deploy Order History Service
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'order-history-service' }}
+        run: kubectl apply -f k8s/order-history-service/
+
+      - name: Deploy Products Service
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'products-service' }}
+        run: kubectl apply -f k8s/products-service/
+
+      - name: Deploy Payments Service
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'payments-service' }}
+        run: kubectl apply -f k8s/payments-service/
+
+      - name: Deploy Digital Identity Service
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'digital-identity-service' }}
+        run: kubectl apply -f k8s/digital-identity-service/
+
+      - name: Deploy Profile Service
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'profile-service' }}
+        run: kubectl apply -f k8s/profile-service/
+
+      - name: Deploy Client
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'client' }}
+        run: kubectl apply -f k8s/client/
+
+      - name: Deploy CDN
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'cdn' }}
+        run: kubectl apply -f k8s/cdn/
+
+      - name: Deploy Ingress
+        if: ${{ github.event.inputs.deploy_target == 'all' }}
+        run: kubectl apply -f k8s/ingress.yaml
+
+      - name: Deploy Logging Stack
+        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'logging-stack' }}
+        run: kubectl apply -f k8s/logging/
+
+      - name: Wait for rollout
+        if: ${{ github.event.inputs.deploy_target == 'all' }}
+        run: |
+          echo "Waiting for deployments to be ready..."
+          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/api-gateway --timeout=120s
+          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/orders-service --timeout=120s
+          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/products-service --timeout=120s
+          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/client --timeout=120s
+          echo "All deployments are ready!"
+
+      - name: Show deployment status
+        run: |
+          echo "=== Pods ==="
+          kubectl -n ${{ env.K8S_NAMESPACE }} get pods -o wide
+          echo ""
+          echo "=== Services ==="
+          kubectl -n ${{ env.K8S_NAMESPACE }} get svc
+          echo ""
+          echo "=== Ingress ==="
+          kubectl -n ${{ env.K8S_NAMESPACE }} get ingress

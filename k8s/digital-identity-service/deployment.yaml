@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: digital-identity-service
+  namespace: ecommerce
+  labels:
+    app: digital-identity-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: digital-identity-service
+  template:
+    metadata:
+      labels:
+        app: digital-identity-service
+    spec:
+      containers:
+        - name: digital-identity-service
+          image: ${CONTAINER_REGISTRY}/digital-identity-service:latest
+          ports:
+            - containerPort: 3005
+          envFrom:
+            - configMapRef:
+                name: ecommerce-config
+            - secretRef:
+                name: ecommerce-secrets
+          env:
+            - name: SERVICE_NAME
+              value: "digital-identity-service"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3005
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3005
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: digital-identity-service
+  namespace: ecommerce
+spec:
+  selector:
+    app: digital-identity-service
+  ports:
+    - port: 3005
+      targetPort: 3005
+  type: ClusterIP

@@ -1,0 +1,62 @@
+# IMPORTANT: Update the host values to match your actual domain
+# Requires NGINX Ingress Controller to be installed on CMC K8s cluster:
+#   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.5/deploy/static/provider/cloud/deploy.yaml
+#
+# For SSL/TLS, install cert-manager:
+#   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.3/cert-manager.yaml
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ecommerce-ingress
+  namespace: ecommerce
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    # Uncomment below for SSL with cert-manager
+    # cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  # Uncomment below for TLS
+  # tls:
+  #   - hosts:
+  #       - your-domain.com
+  #       - api.your-domain.com
+  #     secretName: ecommerce-tls
+  rules:
+    # Frontend Client
+    - host: your-domain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: client
+                port:
+                  number: 4200
+
+    # API Gateway
+    - host: api.your-domain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 3000
+
+    # CDN (Static Assets)
+    - host: cdn.your-domain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cdn
+                port:
+                  number: 8080
