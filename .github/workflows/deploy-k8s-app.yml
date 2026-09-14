@@ -118,10 +118,10 @@ jobs:
         if: ${{ github.event.inputs.deploy_target == 'all' }}
         run: |
           echo "Waiting for deployments to be ready..."
-          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/api-gateway --timeout=120s
-          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/orders-service --timeout=120s
-          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/products-service --timeout=120s
-          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/client --timeout=120s
+          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/api-gateway --timeout=300s
+          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/orders-service --timeout=300s
+          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/products-service --timeout=300s
+          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/client --timeout=300s
           echo "All deployments are ready!"
 
       - name: Show deployment status
