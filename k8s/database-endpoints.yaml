@@ -16,7 +16,7 @@ metadata:
   namespace: ecommerce
 subsets:
   - addresses:
-      - ip: 10.0.20.90
+      - ip: ${POSTGRES_IP}
     ports:
       - port: 5432
 
@@ -38,6 +38,6 @@ metadata:
   namespace: ecommerce
 subsets:
   - addresses:
-      - ip: 10.0.20.104
+      - ip: ${MONGO_IP}
     ports:
       - port: 27017
