@@ -332,7 +332,7 @@ jobs:
       NAMESPACE: ecommerce
     steps:
       - name: Configure kubectl context
-        run: kubectl config use-context k8s-app-context # CẦN SỬA: Thay bằng tên context thật của cụm App
+        run: kubectl config use-context application-cluster-admin@application-cluster
 
       - name: Deploy API Gateway
         if: ${{ needs.detect-changes.outputs.api-gateway == 'true' }}

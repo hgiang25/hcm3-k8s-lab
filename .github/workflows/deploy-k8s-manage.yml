@@ -32,7 +32,7 @@ jobs:
 
       - name: Verify cluster connection
         run: |
-          kubectl config use-context k8s-manage-context # CẦN SỬA: Thay bằng tên context thật
+          kubectl config use-context manage-cluster-admin@manage-cluster
           kubectl cluster-info
           kubectl get nodes
 

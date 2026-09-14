@@ -37,7 +37,7 @@ jobs:
 
       - name: Verify cluster connection
         run: |
-          kubectl config use-context k8s-app-context # CẦN SỬA: Thay bằng tên context thật
+          kubectl config use-context application-cluster-admin@application-cluster
           kubectl cluster-info
           kubectl get nodes
 
