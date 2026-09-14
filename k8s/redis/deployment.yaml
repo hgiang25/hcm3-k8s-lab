@@ -23,7 +23,7 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 1Gi
             limits:
               cpu: 500m
               memory: 512Mi
@@ -32,8 +32,7 @@ spec:
               mountPath: /data
       volumes:
         - name: redis-data
-          persistentVolumeClaim:
-            claimName: redis-pvc
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -59,5 +58,6 @@ spec:
     - port: 6379
       targetPort: 6379
   type: ClusterIP
+
 
 
