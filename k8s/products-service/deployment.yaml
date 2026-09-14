@@ -35,15 +35,14 @@ spec:
             - name: OTEL_LOGS_EXPORTER
               value: "none"
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
-                value: "grpc"
-              - name: OTEL_SERVICE_NAME
-                value: "products-service"
-              - name: SERVICE_NAME
+              value: "grpc"
+            - name: OTEL_SERVICE_NAME
+              value: "products-service"
+            - name: SERVICE_NAME
               value: "products-service"
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+                            memory: 256Mi
             limits:
                             memory: 1Gi
 ---
@@ -59,6 +58,7 @@ spec:
     - port: 3003
       targetPort: 3003
   type: ClusterIP
+
 
 
 
