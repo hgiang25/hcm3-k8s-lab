@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database-seed
+  namespace: ecommerce
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: database-seed
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: database-seed
+          image: ${CONTAINER_REGISTRY}/database-seed:latest
+          envFrom:
+            - secretRef:
+                name: ecommerce-secrets
+          env:
+            - name: S3_CDN_URL
+              value: "${S3_CDN_URL}"

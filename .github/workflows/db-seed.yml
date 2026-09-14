@@ -1,0 +1,67 @@
+name: Seed Database
+
+on:
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+env:
+  REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+
+jobs:
+  build-and-push-seeder:
+    name: Build & Push Seeder Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-database-seed
+          build-args: BUILD_BASE_PATH=database
+          push: true
+          tags: ${{ env.REGISTRY }}/database-seed:latest
+
+  run-seed-job:
+    name: Run Kubernetes Seed Job
+    needs: build-and-push-seeder
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Prepare K8s Manifest
+        run: |
+          # Dùng Python để thay thế chuỗi an toàn thay vì dùng sed
+          python -c "
+          with open('k8s/database-seed-job.yaml', 'r') as f:
+              content = f.read()
+          content = content.replace('${CONTAINER_REGISTRY}', '${{ env.REGISTRY }}')
+          content = content.replace('${S3_CDN_URL}', '${{ secrets.S3_ENDPOINT }}/${{ secrets.S3_CDN_BUCKET }}')
+          with open('k8s/database-seed-job.yaml', 'w') as f:
+              f.write(content)
+          "
+          
+      - name: Run Job on K8s Cluster
+        run: |
+          # Xóa Job cũ (nếu có) để chạy lại từ đầu
+          kubectl delete -f k8s/database-seed-job.yaml --ignore-not-found=true
+          
+          # Deploy Job mới
+          kubectl apply -f k8s/database-seed-job.yaml
+          
+          echo "Bắt đầu chờ Job hoàn tất (timeout 5 phút)..."
+          kubectl wait --for=condition=complete job/database-seed --timeout=300s -n ecommerce || true
+          
+          echo "==== LOGS TỪ DATABASE SEEDER ===="
+          kubectl logs -l job-name=database-seed -n ecommerce
