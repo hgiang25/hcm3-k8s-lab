@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 env:
-  REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}  # e.g. ghcr.io/username or docker.io/username
+  REGISTRY: ghcr.io/${{ github.repository_owner }}  # e.g. ghcr.io/username or docker.io/username
 
 jobs:
   detect-changes:
@@ -327,7 +327,7 @@ jobs:
       !contains(join(needs.*.result, ','), 'cancelled')
     runs-on: self-hosted
     env:
-      REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+      REGISTRY: ghcr.io/${{ github.repository_owner }}
       TAG: ${{ github.sha }}
       NAMESPACE: ecommerce
     steps:
