@@ -326,11 +326,7 @@ jobs:
       !contains(join(needs.*.result, ','), 'failure') &&
       !contains(join(needs.*.result, ','), 'cancelled')
     runs-on: self-hosted
-    permissions:
-  packages: write
-  contents: read
-
-env:
+    env:
       REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
       TAG: ${{ github.sha }}
       NAMESPACE: ecommerce
