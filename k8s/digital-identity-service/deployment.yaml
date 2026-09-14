@@ -34,27 +34,17 @@ spec:
               value: "none"
             - name: OTEL_LOGS_EXPORTER
               value: "none"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
+            - name: OTEL_SERVICE_NAME
+              value: "digital-identity-service"
             - name: SERVICE_NAME
               value: "digital-identity-service"
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+                            memory: 256Mi
             limits:
-              cpu: 500m
-              memory: 1Gi
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 3005
-            initialDelaySeconds: 10
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 3005
-            initialDelaySeconds: 15
-            periodSeconds: 10
+                            memory: 1Gi
 ---
 apiVersion: v1
 kind: Service
@@ -68,6 +58,8 @@ spec:
     - port: 3005
       targetPort: 3005
   type: ClusterIP
+
+
 
 
 

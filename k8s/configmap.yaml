@@ -5,37 +5,37 @@ metadata:
   namespace: ecommerce
 data:
   # API Gateway
-  API_GATEWAY_PORT: "3000"
+  API_GATEWAY_PORT: '3000'
 
   # Service ports
-  ORDERS_SERVICE_PORT: "3001"
-  ORDER_HISTORY_SERVICE_PORT: "3002"
-  PRODUCTS_SERVICE_PORT: "3003"
-  PAYMENTS_SERVICE_PORT: "3004"
-  DIGITAL_IDENTITY_SERVICE_PORT: "3005"
-  PROFILE_SERVICE_PORT: "3006"
+  ORDERS_SERVICE_PORT: '3001'
+  ORDER_HISTORY_SERVICE_PORT: '3002'
+  PRODUCTS_SERVICE_PORT: '3003'
+  PAYMENTS_SERVICE_PORT: '3004'
+  DIGITAL_IDENTITY_SERVICE_PORT: '3005'
+  PROFILE_SERVICE_PORT: '3006'
 
   # Service origins (K8s internal DNS)
-  ORDERS_SERVICE_CONTAINER_ORIGIN: "http://orders-service"
-  ORDER_HISTORY_SERVICE_CONTAINER_ORIGIN: "http://order-history-service"
-  PRODUCTS_SERVICE_CONTAINER_ORIGIN: "http://products-service"
-  PAYMENTS_SERVICE_CONTAINER_ORIGIN: "http://payments-service"
-  DIGITAL_IDENTITY_SERVICE_CONTAINER_ORIGIN: "http://digital-identity-service"
-  PROFILE_SERVICE_CONTAINER_ORIGIN: "http://profile-service"
+  ORDERS_SERVICE_CONTAINER_ORIGIN: 'http://orders-service'
+  ORDER_HISTORY_SERVICE_CONTAINER_ORIGIN: 'http://order-history-service'
+  PRODUCTS_SERVICE_CONTAINER_ORIGIN: 'http://products-service'
+  PAYMENTS_SERVICE_CONTAINER_ORIGIN: 'http://payments-service'
+  DIGITAL_IDENTITY_SERVICE_CONTAINER_ORIGIN: 'http://digital-identity-service'
+  PROFILE_SERVICE_CONTAINER_ORIGIN: 'http://profile-service'
 
   # Redis (CMC Cloud Managed Redis)
   # IMPORTANT: Replace this with your actual CMC Cloud Redis connection string!
-  REDIS_CONNECTION_URI: "redis://10.0.20.242:6379"
+  REDIS_CONNECTION_URI: 'redis://username:password@cmc_redis_endpoint:6379'
 
   # CDN
-  CDN_PORT: "8080"
-  CDN_HOST: "cdn"
+  CDN_PORT: '8080'
+  CDN_HOST: 'cdn'
 
   # Frontend
-  FRONTEND_CLIENT_PORT: "4200"
-  API_GATEWAY_URI: "http://api-gateway:3000"
+  FRONTEND_CLIENT_PORT: '4200'
+  API_GATEWAY_URI: 'http://api-gateway:3000'
   # IMPORTANT: Update this to your actual production domain
-  NEXT_PUBLIC_API_GATEWAY_URI: "https://api.your-domain.com"
+  NEXT_PUBLIC_API_GATEWAY_URI: 'https://api.your-domain.com'
 
   # Log level
-  LOG_LEVEL: "info"
+  LOG_LEVEL: 'info'
