@@ -26,6 +26,14 @@ spec:
             - secretRef:
                 name: ecommerce-secrets
           env:
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://10.0.30.65:30417"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_LOGS_EXPORTER
+              value: "none"
             - name: SERVICE_NAME
               value: "orders-service"
           resources:
@@ -60,3 +68,4 @@ spec:
     - port: 3001
       targetPort: 3001
   type: ClusterIP
+
