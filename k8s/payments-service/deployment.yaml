@@ -39,10 +39,10 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 256Mi
             limits:
               cpu: 500m
-              memory: 256Mi
+              memory: 1Gi
           readinessProbe:
             httpGet:
               path: /
@@ -68,5 +68,6 @@ spec:
     - port: 3004
       targetPort: 3004
   type: ClusterIP
+
 
 
