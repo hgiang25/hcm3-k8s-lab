@@ -53,6 +53,7 @@ jobs:
           
       - name: Run Job on K8s Cluster
         run: |
+          kubectl config use-context k8s-app-context # CẦN SỬA: Thay bằng tên context thật của cụm App
           # Xóa Job cũ (nếu có) để chạy lại từ đầu
           kubectl delete -f k8s/database-seed-job.yaml --ignore-not-found=true
           
