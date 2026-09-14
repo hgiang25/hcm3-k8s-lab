@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: profile-service
-          image: ${CONTAINER_REGISTRY}/profile-service:latest
+          image: hgyang25/profile-service:latest
           ports:
             - containerPort: 3006
           envFrom:
@@ -68,4 +68,5 @@ spec:
     - port: 3006
       targetPort: 3006
   type: ClusterIP
+
 

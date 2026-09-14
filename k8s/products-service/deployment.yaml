@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: products-service
-          image: ${CONTAINER_REGISTRY}/products-service:latest
+          image: hgyang25/products-service:latest
           ports:
             - containerPort: 3003
           envFrom:
@@ -68,4 +68,5 @@ spec:
     - port: 3003
       targetPort: 3003
   type: ClusterIP
+
 

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: payments-service
-          image: ${CONTAINER_REGISTRY}/payments-service:latest
+          image: hgyang25/payments-service:latest
           ports:
             - containerPort: 3004
           envFrom:
@@ -68,4 +68,5 @@ spec:
     - port: 3004
       targetPort: 3004
   type: ClusterIP
+
 

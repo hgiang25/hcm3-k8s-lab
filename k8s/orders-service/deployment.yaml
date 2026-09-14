@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: orders-service
-          image: ${CONTAINER_REGISTRY}/orders-service:latest
+          image: hgyang25/orders-service:latest
           ports:
             - containerPort: 3001
           envFrom:
@@ -68,4 +68,5 @@ spec:
     - port: 3001
       targetPort: 3001
   type: ClusterIP
+
 

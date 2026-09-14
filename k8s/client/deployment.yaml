@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: client
-          image: ${CONTAINER_REGISTRY}/client:latest
+          image: hgyang25/client:latest
           ports:
             - containerPort: 4200
           envFrom:
@@ -57,4 +57,5 @@ spec:
     - port: 4200
       targetPort: 4200
   type: ClusterIP
+
 

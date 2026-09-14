@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: ${CONTAINER_REGISTRY}/api-gateway:latest  # Replace at deploy time
+          image: hgyang25/api-gateway:latest  # Replace at deploy time
           ports:
             - containerPort: 3000
           envFrom:
@@ -68,4 +68,5 @@ spec:
     - port: 3000
       targetPort: 3000
   type: ClusterIP
+
 

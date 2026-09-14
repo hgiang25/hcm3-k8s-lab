@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: digital-identity-service
-          image: ${CONTAINER_REGISTRY}/digital-identity-service:latest
+          image: hgyang25/digital-identity-service:latest
           ports:
             - containerPort: 3005
           envFrom:
@@ -68,4 +68,5 @@ spec:
     - port: 3005
       targetPort: 3005
   type: ClusterIP
+
 

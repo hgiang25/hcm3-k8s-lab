@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: order-history-service
-          image: ${CONTAINER_REGISTRY}/order-history-service:latest
+          image: hgyang25/order-history-service:latest
           ports:
             - containerPort: 3002
           envFrom:
@@ -68,4 +68,5 @@ spec:
     - port: 3002
       targetPort: 3002
   type: ClusterIP
+
 
