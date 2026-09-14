@@ -46,7 +46,7 @@ jobs:
       - name: Configure Database Internal DNS (Endpoints)
         run: |
           # Use sed to replace IP placeholders with GitHub Secrets
-          sed -i "s|\${POSTGRES_IP}|${{ secrets.POSTGRES_IP }}|g" k8s/database-endpoints.yaml
+          sed -i "s|\${REDIS_IP}|${{ secrets.REDIS_IP }}|g" k8s/database-endpoints.yaml
           sed -i "s|\${MONGO_IP}|${{ secrets.MONGO_IP }}|g" k8s/database-endpoints.yaml
           
           # Apply the Internal DNS configuration
