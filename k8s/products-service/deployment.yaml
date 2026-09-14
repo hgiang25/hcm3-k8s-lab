@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: products-service
-          image: ${CONTAINER_REGISTRY}/products-service:latest
+          image: hgyang25/products-service:latest
           ports:
             - containerPort: 3003
           envFrom:
@@ -26,6 +26,14 @@ spec:
             - secretRef:
                 name: ecommerce-secrets
           env:
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://10.0.30.65:30417"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_LOGS_EXPORTER
+              value: "none"
             - name: SERVICE_NAME
               value: "products-service"
           resources:
@@ -60,3 +68,5 @@ spec:
     - port: 3003
       targetPort: 3003
   type: ClusterIP
+
+

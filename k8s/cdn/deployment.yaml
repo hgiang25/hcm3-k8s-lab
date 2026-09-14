@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: cdn
-          image: ${CONTAINER_REGISTRY}/cdn:latest
+          image: hgyang25/cdn:latest
           ports:
             - containerPort: 80
           resources:
@@ -46,3 +46,5 @@ spec:
     - port: 8080
       targetPort: 80
   type: ClusterIP
+
+
