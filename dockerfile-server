@@ -11,7 +11,7 @@ COPY $BUILD_BASE_PATH/package.json ./$BUILD_BASE_PATH/
 COPY $COMMON_BASE_PATH/package.json ./$COMMON_BASE_PATH/
 RUN cd $BUILD_BASE_PATH/ && npm install
 RUN cd $COMMON_BASE_PATH/ && npm install
-RUN cd $BUILD_BASE_PATH/ && npm install @opentelemetry/auto-instrumentations-node @opentelemetry/sdk-node @opentelemetry/exporter-trace-otlp-grpc
+RUN cd $BUILD_BASE_PATH/ && npm install @opentelemetry/auto-instrumentations-node @opentelemetry/sdk-node @opentelemetry/exporter-trace-otlp-grpc winston dotenv yup
 
 # copy files (both base and common)
 COPY $BUILD_BASE_PATH/ ./$BUILD_BASE_PATH/
@@ -22,7 +22,7 @@ RUN cd $COMMON_BASE_PATH/ && npm run prisma-types
 
 # reset (command) work dir
 WORKDIR $INITIAL_WORK_DIR/$BUILD_BASE_PATH
-ENV NODE_OPTIONS="--require @opentelemetry/auto-instrumentations-node/register"
-CMD [ "npm", "start" ]
+ENV APP_PATH=$BUILD_BASE_PATH
+CMD sh -c "npm run build && export NODE_OPTIONS='--require @opentelemetry/auto-instrumentations-node/register' && node dist/${APP_PATH}/src/index.js"
 
 
