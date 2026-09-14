@@ -41,15 +41,9 @@ jobs:
       
       - name: Prepare K8s Manifest
         run: |
-          # Dùng Python để thay thế chuỗi an toàn thay vì dùng sed
-          python3 -c "
-          with open('k8s/database-seed-job.yaml', 'r') as f:
-              content = f.read()
-          content = content.replace('${CONTAINER_REGISTRY}', '${{ env.REGISTRY }}')
-          content = content.replace('${S3_CDN_URL}', '${{ secrets.S3_ENDPOINT }}/${{ secrets.S3_CDN_BUCKET }}')
-          with open('k8s/database-seed-job.yaml', 'w') as f:
-              f.write(content)
-          "
+          # Dùng sed để thay thế chuỗi
+          sed -i "s|\${CONTAINER_REGISTRY}|${{ env.REGISTRY }}|g" k8s/database-seed-job.yaml
+          sed -i "s|\${S3_CDN_URL}|${{ secrets.S3_ENDPOINT }}/${{ secrets.S3_CDN_BUCKET }}|g" k8s/database-seed-job.yaml
           
       - name: Run Job on K8s Cluster
         run: |
