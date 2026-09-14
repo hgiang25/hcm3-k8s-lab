@@ -23,9 +23,6 @@ data:
   DIGITAL_IDENTITY_SERVICE_CONTAINER_ORIGIN: 'http://digital-identity-service'
   PROFILE_SERVICE_CONTAINER_ORIGIN: 'http://profile-service'
 
-  # Redis (CMC Cloud Managed Redis)
-  # IMPORTANT: Replace this with your actual CMC Cloud Redis connection string!
-  REDIS_CONNECTION_URI: 'redis://username:password@cmc_redis_endpoint:6379'
 
   # CDN
   CDN_PORT: '8080'
