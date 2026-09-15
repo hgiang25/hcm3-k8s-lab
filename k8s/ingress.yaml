@@ -26,7 +26,7 @@ spec:
   #     secretName: ecommerce-tls
   rules:
     # Frontend Client
-    - host: ecommerce.local
+    - host: redis-shopping.ntdevopsmlflow.io.vn
       http:
         paths:
           - path: /
@@ -38,7 +38,7 @@ spec:
                   number: 4200
 
     # API Gateway
-    - host: api.ecommerce.local
+    - host: api.redis-shopping.ntdevopsmlflow.io.vn
       http:
         paths:
           - path: /
