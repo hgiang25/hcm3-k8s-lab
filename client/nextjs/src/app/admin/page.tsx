@@ -10,7 +10,7 @@ import {
     Bar, Doughnut, PolarArea,
     createBarChartData, createBasicChartData
 } from './chart';
-import { getOrderStats } from '@/utils/services';
+import { getOrderStats, addProduct } from '@/utils/services';
 
 function getBrandPurchaseChartInfo(_orderStats?: api.OrderStatsResponse) {
     const chartInfo: IChartInfo = {
@@ -241,6 +241,61 @@ export default function Home() {
     const [orderStats, setOrderStats] = useState<api.OrderStatsResponse>();
     const router = useRouter();
 
+    // Add Product form state
+    const [productForm, setProductForm] = useState({
+        productDisplayName: '',
+        price: '',
+        brandName: '',
+        variantName: '',
+        ageGroup: '',
+        gender: '',
+        displayCategories: '',
+        masterCategory_typeName: '',
+        subCategory_typeName: '',
+        styleImages_default_imageURL: '',
+        productDescriptors_description_value: '',
+        stockQty: '25',
+        productColors: '',
+    });
+    const [addProductMsg, setAddProductMsg] = useState('');
+    const [addProductError, setAddProductError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        setProductForm({ ...productForm, [e.target.name]: e.target.value });
+    };
+
+    const handleAddProduct = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setAddProductMsg('');
+        setAddProductError('');
+        setIsSubmitting(true);
+
+        try {
+            const result = await addProduct({
+                ...productForm,
+                price: Number(productForm.price),
+                stockQty: Number(productForm.stockQty),
+            });
+
+            if (result?.data?.productId) {
+                setAddProductMsg(`✅ Thêm sản phẩm thành công! ID: ${result.data.productId}`);
+                // Reset form
+                setProductForm({
+                    productDisplayName: '', price: '', brandName: '', variantName: '',
+                    ageGroup: '', gender: '', displayCategories: '', masterCategory_typeName: '',
+                    subCategory_typeName: '', styleImages_default_imageURL: '',
+                    productDescriptors_description_value: '', stockQty: '25', productColors: '',
+                });
+            } else {
+                setAddProductError(result?.error || 'Thêm sản phẩm thất bại');
+            }
+        } catch (err) {
+            setAddProductError('Lỗi kết nối server');
+        }
+        setIsSubmitting(false);
+    };
+
     const brandPurchaseChart = getBrandPurchaseChartInfo(orderStats);
     const categoryPurchaseChart = getCategoryPurchaseChartInfo(orderStats);
     const productPurchaseChart = getProductPurchaseChartInfo(orderStats);
@@ -277,6 +332,118 @@ export default function Home() {
             <Navbar path="admin" />
             <main>
                 <div className="max-w-screen-xl mx-auto p-6 pt-16">
+
+                    {/* ===== ADD PRODUCT SECTION ===== */}
+                    <div className="mb-8 p-6 bg-white rounded-lg shadow-lg border border-neutral-200">
+                        <h2 className="text-xl font-bold uppercase mb-4">🛍️ Add New Product</h2>
+
+                        {addProductMsg && (
+                            <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">{addProductMsg}</div>
+                        )}
+                        {addProductError && (
+                            <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">❌ {addProductError}</div>
+                        )}
+
+                        <form onSubmit={handleAddProduct}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Product Name *</label>
+                                    <input type="text" name="productDisplayName" value={productForm.productDisplayName}
+                                        onChange={handleFormChange} required
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Nike Air Max 90" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Price *</label>
+                                    <input type="number" name="price" value={productForm.price}
+                                        onChange={handleFormChange} required min="1"
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. 2500" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Brand Name</label>
+                                    <input type="text" name="brandName" value={productForm.brandName}
+                                        onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Nike" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Variant Name</label>
+                                    <input type="text" name="variantName" value={productForm.variantName}
+                                        onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Black Edition" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Gender</label>
+                                    <select name="gender" value={productForm.gender} onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                                        <option value="">-- Select --</option>
+                                        <option value="Men">Men</option>
+                                        <option value="Women">Women</option>
+                                        <option value="Unisex">Unisex</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Age Group</label>
+                                    <select name="ageGroup" value={productForm.ageGroup} onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                                        <option value="">-- Select --</option>
+                                        <option value="Adults-Men">Adults-Men</option>
+                                        <option value="Adults-Women">Adults-Women</option>
+                                        <option value="Kids-Boys">Kids-Boys</option>
+                                        <option value="Kids-Girls">Kids-Girls</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Category</label>
+                                    <input type="text" name="displayCategories" value={productForm.displayCategories}
+                                        onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Casual Wear" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Master Category</label>
+                                    <input type="text" name="masterCategory_typeName" value={productForm.masterCategory_typeName}
+                                        onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Apparel" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Sub Category</label>
+                                    <input type="text" name="subCategory_typeName" value={productForm.subCategory_typeName}
+                                        onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Topwear" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Stock Quantity</label>
+                                    <input type="number" name="stockQty" value={productForm.stockQty}
+                                        onChange={handleFormChange} min="0"
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Image URL</label>
+                                    <input type="text" name="styleImages_default_imageURL" value={productForm.styleImages_default_imageURL}
+                                        onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="https://example.com/image.jpg" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Colors</label>
+                                    <input type="text" name="productColors" value={productForm.productColors}
+                                        onChange={handleFormChange}
+                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Black, White, Red" />
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                <label className="block text-sm font-semibold mb-1">Description</label>
+                                <textarea name="productDescriptors_description_value" value={productForm.productDescriptors_description_value}
+                                    onChange={handleFormChange} rows={3}
+                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Product description..." />
+                            </div>
+                            <div className="mt-4">
+                                <button type="submit" disabled={isSubmitting}
+                                    className="inline-block rounded bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 px-6 py-2.5 text-sm font-semibold uppercase leading-normal text-white shadow-md">
+                                    {isSubmitting ? 'Adding...' : '➕ Add Product'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* ===== DASHBOARD STATS SECTION ===== */}
                     <div className="mb-2 flex justify-between">
                         <h5 className="font-bold uppercase">
                             Total Purchase Amount :

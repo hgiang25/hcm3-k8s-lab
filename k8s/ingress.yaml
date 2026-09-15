@@ -11,9 +11,9 @@ metadata:
   name: ecommerce-ingress
   namespace: ecommerce
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-body-size: '10m'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '60'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '60'
     # Uncomment below for SSL with cert-manager
     # cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
@@ -50,7 +50,7 @@ spec:
                   number: 3000
 
     # CDN (Static Assets)
-    - host: cdn.ecommerce.local
+    - host: cdn.ntdevopsmlflow.io.vn
       http:
         paths:
           - path: /
