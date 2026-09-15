@@ -51,6 +51,7 @@ jobs:
           sed -i "s|\${MONGO_IP}|${{ secrets.MONGO_IP }}|g" k8s/database-endpoints.yaml
           
           # Replace passwords in secrets.yaml
+          sed -i "s|\${MONGO_USER}|${{ secrets.MONGO_USER }}|g" k8s/secrets.yaml
           sed -i "s|\${MONGO_PASSWORD}|${{ secrets.MONGO_PASSWORD }}|g" k8s/secrets.yaml
           sed -i "s|\${REDIS_PASSWORD}|${{ secrets.REDIS_PASSWORD }}|g" k8s/secrets.yaml
           
