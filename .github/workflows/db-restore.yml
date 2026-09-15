@@ -13,12 +13,11 @@ jobs:
     name: Restore MongoDB
     runs-on: self-hosted
     steps:
-      - name: Install MongoDB tools
+      - name: Download MongoDB tools
         run: |
-          wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
-          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-database-tools
+          wget -q https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
+          tar -zxvf mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
+          echo "${PWD}/mongodb-database-tools-ubuntu2204-x86_64-100.9.4/bin" >> $GITHUB_PATH
 
       - name: Configure CMC S3 Credentials
         run: |
