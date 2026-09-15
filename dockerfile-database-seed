@@ -1,9 +1,8 @@
-FROM node:18-alpine
+FROM node:18
 
 ARG BUILD_BASE_PATH
 
-# Install necessary build tools
-RUN apk add --no-cache python3 make g++
+# Install necessary build tools if needed (node:18 already has most of them)
 
 WORKDIR /data
 

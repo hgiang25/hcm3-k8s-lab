@@ -6,7 +6,8 @@ import {
   getProductsByFilter, triggerResetInventory,
   getZipCodes, getStoreProductsByGeoFilter,
   chatBot, getChatHistory,
-  getProductsByVSSText, getProductsByVSSImageSummary
+  getProductsByVSSText, getProductsByVSSImageSummary,
+  addProduct
 } from './service-impl';
 import { HTTP_STATUS_CODES } from '../../../common/config/constants';
 import { SERVER_CONFIG } from '../../../common/config/server-config';
@@ -254,6 +255,50 @@ router.post(
     }
 
     res.send(result);
+  },
+);
+
+router.post(
+  API_NAMES.ADD_PRODUCT,
+  async (req: Request, res: Response) => {
+    const body = req.body;
+    const result: IApiResponseBody = {
+      data: null,
+      error: null,
+    };
+
+    // Check ADMIN role from x-session header
+    const sessionDataStr = req.header('x-session');
+    const sessionData = sessionDataStr ? JSON.parse(sessionDataStr) : null;
+    const role = sessionData ? sessionData.role : null;
+
+    if (role !== 'ADMIN') {
+      result.error = 'Forbidden: Only ADMIN can add products';
+      res.status(403).send(result);
+      return;
+    }
+
+    // Validate required fields
+    if (!body.productDisplayName || !body.price) {
+      result.error = 'productDisplayName and price are required';
+      res.status(400).send(result);
+      return;
+    }
+
+    try {
+      const newProduct = await addProduct(body);
+      result.data = newProduct;
+      res.status(201).send(result);
+    } catch (err) {
+      const pureErr = LoggerCls.getPureError(err);
+      result.error = pureErr;
+      res.status(HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR);
+      LoggerCls.error(
+        `${API_NAMES.ADD_PRODUCT} API failed !`,
+        pureErr,
+      );
+      res.send(result);
+    }
   },
 );
 

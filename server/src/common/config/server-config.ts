@@ -115,6 +115,7 @@ const SERVER_CONFIG = {
       GET_CHAT_HISTORY: '/getChatHistory',
       GET_PRODUCTS_BY_VSS_TEXT: '/getProductsByVSSText',
       GET_PRODUCTS_BY_VSS_IMAGE_SUMMARY: '/getProductsByVSSImageSummary',
+      ADD_PRODUCT: '/addProduct',
     }
   },
   PAYMENTS_SERVICE: {

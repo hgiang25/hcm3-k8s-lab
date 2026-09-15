@@ -212,3 +212,28 @@ export async function registerUser(username: string, password: string, role?: st
   );
   return result;
 }
+
+export async function addProduct(productData: {
+  productDisplayName: string;
+  price: number;
+  brandName?: string;
+  variantName?: string;
+  ageGroup?: string;
+  gender?: string;
+  displayCategories?: string;
+  masterCategory_typeName?: string;
+  subCategory_typeName?: string;
+  styleImages_default_imageURL?: string;
+  productDescriptors_description_value?: string;
+  stockQty?: number;
+  productColors?: string;
+}): Promise<any> {
+  const result = await request(
+    `${process.env.NEXT_PUBLIC_API_GATEWAY_URI}/products/addProduct`,
+    {
+      method: 'POST',
+      body: JSON.stringify(productData),
+    },
+  );
+  return result;
+}
