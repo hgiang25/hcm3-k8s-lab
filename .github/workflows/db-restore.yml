@@ -38,7 +38,7 @@ jobs:
           echo "Starting MongoDB restore..."
 
           mongorestore \
-            --uri="mongodb://admin:rootpassword@${{ secrets.MONGO_IP }}:27017/dbFashion" \
+            --uri="mongodb://${{ secrets.MONGO_USER }}:${{ secrets.MONGO_PASSWORD }}@${{ secrets.MONGO_IP }}:27017/dbFashion" \
             --gzip \
             --archive="backups/mongodb.archive.gz" \
             --drop

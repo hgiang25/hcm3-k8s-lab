@@ -29,7 +29,7 @@ jobs:
 
           # Sử dụng MONGO_IP thay cho MONGO_URL để giảm số lượng biến cần cấu hình
           mongodump \
-            --uri="mongodb://admin:rootpassword@${{ secrets.MONGO_IP }}:27017/dbFashion" \
+            --uri="mongodb://${{ secrets.MONGO_USER }}:${{ secrets.MONGO_PASSWORD }}@${{ secrets.MONGO_IP }}:27017/dbFashion" \
             --gzip \
             --archive="backups/mongodb.archive.gz"
 
