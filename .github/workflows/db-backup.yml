@@ -11,7 +11,7 @@ env:
 jobs:
   backup-mongodb:
     name: Backup MongoDB
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Install MongoDB tools
