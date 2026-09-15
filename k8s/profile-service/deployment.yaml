@@ -42,9 +42,9 @@ spec:
               value: "profile-service"
           resources:
             requests:
-                            memory: 256Mi
+              memory: 256Mi
             limits:
-                            memory: 1Gi
+              memory: 2Gi
 ---
 apiVersion: v1
 kind: Service
@@ -58,6 +58,7 @@ spec:
     - port: 3006
       targetPort: 3006
   type: ClusterIP
+
 
 
 

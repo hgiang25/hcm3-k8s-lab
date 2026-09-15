@@ -488,6 +488,59 @@ const getProductsByVSSImageSummary = async (productsVSSFilter: IProductsVSSBodyF
   return products;
 }
 
+const addProduct = async (productData: {
+  productDisplayName: string;
+  price: number;
+  brandName?: string;
+  variantName?: string;
+  ageGroup?: string;
+  gender?: string;
+  displayCategories?: string;
+  masterCategory_typeName?: string;
+  subCategory_typeName?: string;
+  styleImages_default_imageURL?: string;
+  productDescriptors_description_value?: string;
+  stockQty?: number;
+  productColors?: string;
+}) => {
+  const prisma = getPrismaClient();
+  const redisClient = getNodeRedisClient();
+
+  // Generate a unique productId
+  const productId = 'P_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+
+  const newProduct: Prisma.ProductCreateInput = {
+    productId,
+    productDisplayName: productData.productDisplayName,
+    price: Number(productData.price),
+    brandName: productData.brandName || '',
+    variantName: productData.variantName || '',
+    ageGroup: productData.ageGroup || '',
+    gender: productData.gender || '',
+    displayCategories: productData.displayCategories || '',
+    masterCategory_typeName: productData.masterCategory_typeName || '',
+    subCategory_typeName: productData.subCategory_typeName || '',
+    styleImages_default_imageURL: productData.styleImages_default_imageURL || '',
+    productDescriptors_description_value: productData.productDescriptors_description_value || '',
+    stockQty: Number(productData.stockQty) || 25,
+    productColors: productData.productColors || '',
+    createdBy: 'ADMIN',
+  };
+
+  // 1. Save to MongoDB via Prisma
+  const insertedProduct = await prisma.product.create({
+    data: newProduct,
+  });
+
+  // 2. Save to Redis JSON for instant search/cache availability
+  if (redisClient) {
+    const productKey = ProductRepo.PRODUCT_KEY_PREFIX + ':' + insertedProduct.productId;
+    await redisClient.json.set(productKey, '.', insertedProduct as any);
+  }
+
+  return insertedProduct;
+};
+
 export {
   getProductsByFilter,
   getProductsByFilterFromDB,
@@ -497,5 +550,6 @@ export {
   chatBot,
   getChatHistory,
   getProductsByVSSText,
-  getProductsByVSSImageSummary
+  getProductsByVSSImageSummary,
+  addProduct
 };

@@ -23,7 +23,6 @@ data:
   DIGITAL_IDENTITY_SERVICE_CONTAINER_ORIGIN: 'http://digital-identity-service'
   PROFILE_SERVICE_CONTAINER_ORIGIN: 'http://profile-service'
 
-
   # CDN
   CDN_PORT: '8080'
   CDN_HOST: 'cdn'
