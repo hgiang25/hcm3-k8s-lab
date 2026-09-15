@@ -26,7 +26,7 @@ spec:
   #     secretName: ecommerce-tls
   rules:
     # Frontend Client
-    - host: your-domain.com
+    - host: redis-shopping.ntdevopsmlflow.io.vn
       http:
         paths:
           - path: /
@@ -38,7 +38,7 @@ spec:
                   number: 4200
 
     # API Gateway
-    - host: api.your-domain.com
+    - host: api-shopping.ntdevopsmlflow.io.vn
       http:
         paths:
           - path: /
@@ -50,7 +50,7 @@ spec:
                   number: 3000
 
     # CDN (Static Assets)
-    - host: cdn.your-domain.com
+    - host: cdn.ntdevopsmlflow.io.vn
       http:
         paths:
           - path: /
