@@ -32,7 +32,7 @@ export default function LoginPage() {
           setError(res.error);
         } else {
           setIsLogin(true);
-          setError('Registration successful! Please login.');
+          setError('Registration successful   ! Please login.');
         }
       }
     } catch (err: any) {
