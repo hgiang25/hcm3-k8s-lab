@@ -1,0 +1,367 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'client/**'
+      - 'cdn/**'
+      - 'dockerfile-*'
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+env:
+  REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}  # e.g. ghcr.io/username or docker.io/username
+
+jobs:
+  detect-changes:
+    name: Detect changed services
+    runs-on: ubuntu-latest
+    outputs:
+      api-gateway: ${{ steps.changes.outputs.api-gateway }}
+      orders: ${{ steps.changes.outputs.orders }}
+      order-history: ${{ steps.changes.outputs.order-history }}
+      products: ${{ steps.changes.outputs.products }}
+      payments: ${{ steps.changes.outputs.payments }}
+      digital-identity: ${{ steps.changes.outputs.digital-identity }}
+      profile: ${{ steps.changes.outputs.profile }}
+      client: ${{ steps.changes.outputs.client }}
+      cdn: ${{ steps.changes.outputs.cdn }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            api-gateway:
+              - 'server/src/api-gateway/**'
+              - 'server/src/common/**'
+              - 'dockerfile-server'
+            orders:
+              - 'server/src/services/orders/**'
+              - 'server/src/common/**'
+              - 'dockerfile-server'
+            order-history:
+              - 'server/src/services/order-history/**'
+              - 'server/src/common/**'
+              - 'dockerfile-server'
+            products:
+              - 'server/src/services/products/**'
+              - 'server/src/common/**'
+              - 'dockerfile-server'
+            payments:
+              - 'server/src/services/payments/**'
+              - 'server/src/common/**'
+              - 'dockerfile-server'
+            digital-identity:
+              - 'server/src/services/digital-identity/**'
+              - 'server/src/common/**'
+              - 'dockerfile-server'
+            profile:
+              - 'server/src/services/profile/**'
+              - 'server/src/common/**'
+              - 'dockerfile-server'
+            client:
+              - 'client/**'
+              - 'dockerfile-client'
+            cdn:
+              - 'cdn/**'
+              - 'dockerfile-cdn'
+
+  build-api-gateway:
+    name: Build API Gateway
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.api-gateway == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-server
+          build-args: BUILD_BASE_PATH=server/src/api-gateway
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/api-gateway:latest
+            ${{ env.REGISTRY }}/api-gateway:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-orders:
+    name: Build Orders Service
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.orders == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-server
+          build-args: BUILD_BASE_PATH=server/src/services/orders
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/orders-service:latest
+            ${{ env.REGISTRY }}/orders-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-order-history:
+    name: Build Order History Service
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.order-history == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-server
+          build-args: BUILD_BASE_PATH=server/src/services/order-history
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/order-history-service:latest
+            ${{ env.REGISTRY }}/order-history-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-products:
+    name: Build Products Service
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.products == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-server
+          build-args: BUILD_BASE_PATH=server/src/services/products
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/products-service:latest
+            ${{ env.REGISTRY }}/products-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-payments:
+    name: Build Payments Service
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.payments == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-server
+          build-args: BUILD_BASE_PATH=server/src/services/payments
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/payments-service:latest
+            ${{ env.REGISTRY }}/payments-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-digital-identity:
+    name: Build Digital Identity Service
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.digital-identity == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-server
+          build-args: BUILD_BASE_PATH=server/src/services/digital-identity
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/digital-identity-service:latest
+            ${{ env.REGISTRY }}/digital-identity-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-profile:
+    name: Build Profile Service
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.profile == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-server
+          build-args: BUILD_BASE_PATH=server/src/services/profile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/profile-service:latest
+            ${{ env.REGISTRY }}/profile-service:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-client:
+    name: Build Client
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.client == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-client
+          build-args: |
+            BUILD_BASE_PATH=client/nextjs
+            API_GATEWAY_URI=http://api-gateway:3000
+            NEXT_PUBLIC_API_GATEWAY_URI=${{ secrets.NEXT_PUBLIC_API_GATEWAY_URI }}
+            NEXT_PUBLIC_LANDING_PAGE_CODE=${{ secrets.NEXT_PUBLIC_LANDING_PAGE_CODE }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/client:latest
+            ${{ env.REGISTRY }}/client:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-cdn:
+    name: Build CDN
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.cdn == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: dockerfile-cdn
+          build-args: BUILD_BASE_PATH=cdn
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/cdn:latest
+            ${{ env.REGISTRY }}/cdn:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-to-k8s:
+    name: Auto-Deploy to K8s
+    needs:
+      - detect-changes
+      - build-api-gateway
+      - build-orders
+      - build-order-history
+      - build-products
+      - build-payments
+      - build-digital-identity
+      - build-profile
+      - build-client
+    if: |
+      always() && 
+      (needs.detect-changes.outputs.api-gateway == 'true' || 
+       needs.detect-changes.outputs.orders == 'true' ||
+       needs.detect-changes.outputs.order-history == 'true' ||
+       needs.detect-changes.outputs.products == 'true' ||
+       needs.detect-changes.outputs.payments == 'true' ||
+       needs.detect-changes.outputs.digital-identity == 'true' ||
+       needs.detect-changes.outputs.profile == 'true' ||
+       needs.detect-changes.outputs.client == 'true') &&
+      !contains(join(needs.*.result, ','), 'failure') &&
+      !contains(join(needs.*.result, ','), 'cancelled')
+    runs-on: self-hosted
+    env:
+      REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
+      TAG: ${{ github.sha }}
+      NAMESPACE: ecommerce
+    steps:
+      - name: Configure kubectl context
+        run: echo "Assuming self-hosted runner has kubectl configured for the app cluster"
+
+      - name: Deploy API Gateway
+        if: ${{ needs.detect-changes.outputs.api-gateway == 'true' }}
+        run: kubectl set image deployment/api-gateway api-gateway=${REGISTRY}/api-gateway:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Orders Service
+        if: ${{ needs.detect-changes.outputs.orders == 'true' }}
+        run: kubectl set image deployment/orders-service orders-service=${REGISTRY}/orders-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Order History Service
+        if: ${{ needs.detect-changes.outputs.order-history == 'true' }}
+        run: kubectl set image deployment/order-history-service order-history-service=${REGISTRY}/order-history-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Products Service
+        if: ${{ needs.detect-changes.outputs.products == 'true' }}
+        run: kubectl set image deployment/products-service products-service=${REGISTRY}/products-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Payments Service
+        if: ${{ needs.detect-changes.outputs.payments == 'true' }}
+        run: kubectl set image deployment/payments-service payments-service=${REGISTRY}/payments-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Digital Identity Service
+        if: ${{ needs.detect-changes.outputs.digital-identity == 'true' }}
+        run: kubectl set image deployment/digital-identity-service digital-identity-service=${REGISTRY}/digital-identity-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Profile Service
+        if: ${{ needs.detect-changes.outputs.profile == 'true' }}
+        run: kubectl set image deployment/profile-service profile-service=${REGISTRY}/profile-service:${TAG} -n ${NAMESPACE}
+
+      - name: Deploy Client (Frontend)
+        if: ${{ needs.detect-changes.outputs.client == 'true' }}
+        run: kubectl set image deployment/client client=${REGISTRY}/client:${TAG} -n ${NAMESPACE}
