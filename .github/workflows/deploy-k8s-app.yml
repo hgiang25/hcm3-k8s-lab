@@ -118,9 +118,16 @@ jobs:
       - name: Deploy Ingress and Public ELB
         if: ${{ github.event.inputs.deploy_target == 'all' }}
         run: |
+          echo "Installing NGINX Ingress Controller..."
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.5/deploy/static/provider/cloud/deploy.yaml
+          
+          echo "Waiting for NGINX Ingress Controller service to be created..."
+          sleep 15
+          
+          echo "Applying Ingress Rules..."
           kubectl apply -f k8s/ingress.yaml
           
-          # Patch Nginx Ingress Controller to create CMC Public ELB
+          echo "Patching Nginx Ingress Controller to create CMC Public ELB..."
           kubectl patch svc ingress-nginx-controller -n ingress-nginx --patch-file k8s/ingress-nginx-svc-patch.yaml || echo "Nginx Ingress Controller not found or named differently, skipping ELB patch."
 
       - name: Wait for rollout
