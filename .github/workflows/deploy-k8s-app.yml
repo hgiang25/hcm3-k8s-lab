@@ -123,6 +123,10 @@ jobs:
           
           echo "Waiting for NGINX Ingress Controller service to be created..."
           sleep 15
+
+          echo "Patching NGINX Ingress Controller pod anti-affinity..."
+          kubectl patch deployment ingress-nginx-controller -n ingress-nginx \
+            --patch-file k8s/ingress-nginx-deployment-patch.yaml
           
           echo "Applying Ingress Rules..."
           kubectl apply -f k8s/ingress.yaml
