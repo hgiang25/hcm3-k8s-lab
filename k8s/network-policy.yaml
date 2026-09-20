@@ -1,0 +1,95 @@
+# ============================================================
+# NetworkPolicy: Bảo vệ Database - Chỉ Backend mới được truy cập
+# ============================================================
+
+# 1. Chặn truy cập trái phép vào MongoDB
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-to-mongodb
+  namespace: ecommerce
+spec:
+  podSelector:
+    matchLabels:
+      app: mongodb-server
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - api-gateway
+                  - orders-service
+                  - products-service
+                  - payments-service
+                  - profile-service
+                  - order-history-service
+                  - digital-identity-service
+      ports:
+        - protocol: TCP
+          port: 27017
+
+---
+# 2. Chặn truy cập trái phép vào PostgreSQL
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-to-postgresql
+  namespace: ecommerce
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql-server
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - api-gateway
+                  - orders-service
+                  - products-service
+                  - payments-service
+                  - profile-service
+                  - order-history-service
+                  - digital-identity-service
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# 3. Chặn truy cập trái phép vào Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-to-redis
+  namespace: ecommerce
+spec:
+  podSelector:
+    matchLabels:
+      app: redis-server
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - api-gateway
+                  - orders-service
+                  - products-service
+                  - payments-service
+                  - profile-service
+                  - order-history-service
+                  - digital-identity-service
+      ports:
+        - protocol: TCP
+          port: 6379

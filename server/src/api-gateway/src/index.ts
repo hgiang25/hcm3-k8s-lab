@@ -230,6 +230,11 @@ app.use(
   }),
 );
 
+// Health check endpoint for Kubernetes probes
+app.get('/health', (req: any, res: any) => {
+  res.status(200).json({ status: 'ok', service: 'api-gateway' });
+});
+
 app.listen(PORT, async () => {
   await setRedis(REDIS_URI);
 

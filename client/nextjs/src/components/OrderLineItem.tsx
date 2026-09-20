@@ -8,6 +8,14 @@ interface Props {
 export default function OrderLineItem({ item }: Props) {
   const product = item.productData;
 
+  if (!product) {
+    return (
+      <div className="flex flex-col md:flex-row justify-start items-start md:items-center w-full border-b px-2 border-gray-200 py-4">
+        <p className="text-red-500">Product details unavailable (ID: {item.productId})</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col md:flex-row justify-start items-start md:items-center w-full border-b px-2 border-gray-200">
       <div className="w-32">

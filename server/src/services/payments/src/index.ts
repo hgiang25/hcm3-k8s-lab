@@ -23,6 +23,11 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Express Server for ' + API_PREFIX);
 });
 
+// Health check endpoint for Kubernetes probes
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok', service: 'payments-service' });
+});
+
 app.listen(PORT, async () => {
   await setRedis(REDIS_URI);
   await setPrisma();
