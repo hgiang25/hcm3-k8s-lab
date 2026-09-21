@@ -267,7 +267,7 @@ jobs:
           build-args: |
             BUILD_BASE_PATH=client/nextjs
             API_GATEWAY_URI=http://api-gateway:3000
-            NEXT_PUBLIC_API_GATEWAY_URI=${{ secrets.NEXT_PUBLIC_API_GATEWAY_URI }}
+            NEXT_PUBLIC_API_GATEWAY_URI=https://api.redis-shopping.ntdevopsmlflow.io.vn
             NEXT_PUBLIC_LANDING_PAGE_CODE=${{ secrets.NEXT_PUBLIC_LANDING_PAGE_CODE }}
           push: true
           tags: |
