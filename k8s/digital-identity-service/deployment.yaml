@@ -20,7 +20,7 @@ spec:
         runAsUser: 1000
       containers:
         - name: digital-identity-service
-          image: hgyang25/digital-identity-service:latest
+          image: ${CONTAINER_REGISTRY}/digital-identity-service:latest
           ports:
             - containerPort: 3005
           envFrom:

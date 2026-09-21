@@ -20,7 +20,7 @@ spec:
         runAsUser: 1000
       containers:
         - name: api-gateway
-          image: hgyang25/api-gateway:latest
+          image: ${CONTAINER_REGISTRY}/api-gateway:latest
           ports:
             - containerPort: 3000
           envFrom:

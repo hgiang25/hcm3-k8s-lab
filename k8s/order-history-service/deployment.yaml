@@ -20,7 +20,7 @@ spec:
         runAsUser: 1000
       containers:
         - name: order-history-service
-          image: hgyang25/order-history-service:latest
+          image: ${CONTAINER_REGISTRY}/order-history-service:latest
           ports:
             - containerPort: 3002
           envFrom:

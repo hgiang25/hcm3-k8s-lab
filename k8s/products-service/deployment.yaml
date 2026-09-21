@@ -20,7 +20,7 @@ spec:
         runAsUser: 1000
       containers:
         - name: products-service
-          image: hgyang25/products-service:latest
+          image: ${CONTAINER_REGISTRY}/products-service:latest
           ports:
             - containerPort: 3003
           envFrom:

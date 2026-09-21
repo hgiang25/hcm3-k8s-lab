@@ -20,7 +20,7 @@ spec:
         runAsUser: 1000
       containers:
         - name: profile-service
-          image: hgyang25/profile-service:latest
+          image: ${CONTAINER_REGISTRY}/profile-service:latest
           ports:
             - containerPort: 3006
           envFrom:

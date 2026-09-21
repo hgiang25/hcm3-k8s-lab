@@ -20,7 +20,7 @@ spec:
         runAsUser: 1000
       containers:
         - name: orders-service
-          image: hgyang25/orders-service:latest
+          image: ${CONTAINER_REGISTRY}/orders-service:latest
           ports:
             - containerPort: 3001
           envFrom:
