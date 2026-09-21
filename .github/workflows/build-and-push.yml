@@ -335,33 +335,33 @@ jobs:
         run: kubectl config use-context application-cluster-admin@application-cluster
 
       - name: Deploy API Gateway
-        if: ${{ needs.detect-changes.outputs.api-gateway == 'true' }}
+        if: ${{ needs.detect-changes.outputs.api-gateway == 'true' || github.event_name == 'workflow_dispatch' }}
         run: kubectl set image deployment/api-gateway api-gateway=${REGISTRY}/api-gateway:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Orders Service
-        if: ${{ needs.detect-changes.outputs.orders == 'true' }}
+        if: ${{ needs.detect-changes.outputs.orders == 'true' || github.event_name == 'workflow_dispatch' }}
         run: kubectl set image deployment/orders-service orders-service=${REGISTRY}/orders-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Order History Service
-        if: ${{ needs.detect-changes.outputs.order-history == 'true' }}
+        if: ${{ needs.detect-changes.outputs.order-history == 'true' || github.event_name == 'workflow_dispatch' }}
         run: kubectl set image deployment/order-history-service order-history-service=${REGISTRY}/order-history-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Products Service
-        if: ${{ needs.detect-changes.outputs.products == 'true' }}
+        if: ${{ needs.detect-changes.outputs.products == 'true' || github.event_name == 'workflow_dispatch' }}
         run: kubectl set image deployment/products-service products-service=${REGISTRY}/products-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Payments Service
-        if: ${{ needs.detect-changes.outputs.payments == 'true' }}
+        if: ${{ needs.detect-changes.outputs.payments == 'true' || github.event_name == 'workflow_dispatch' }}
         run: kubectl set image deployment/payments-service payments-service=${REGISTRY}/payments-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Digital Identity Service
-        if: ${{ needs.detect-changes.outputs.digital-identity == 'true' }}
+        if: ${{ needs.detect-changes.outputs.digital-identity == 'true' || github.event_name == 'workflow_dispatch' }}
         run: kubectl set image deployment/digital-identity-service digital-identity-service=${REGISTRY}/digital-identity-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Profile Service
-        if: ${{ needs.detect-changes.outputs.profile == 'true' }}
+        if: ${{ needs.detect-changes.outputs.profile == 'true' || github.event_name == 'workflow_dispatch' }}
         run: kubectl set image deployment/profile-service profile-service=${REGISTRY}/profile-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Client (Frontend)
-        if: ${{ needs.detect-changes.outputs.client == 'true' }}
+        if: ${{ needs.detect-changes.outputs.client == 'true' || github.event_name == 'workflow_dispatch' }}
         run: kubectl set image deployment/client client=${REGISTRY}/client:${TAG} -n ${NAMESPACE}
