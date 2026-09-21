@@ -48,7 +48,7 @@ jobs:
         run: |
           # Use sed to replace IP placeholders with GitHub Secrets
           sed -i "s|\${REDIS_IP}|${{ secrets.REDIS_IP }}|g" k8s/database-endpoints.yaml
-          sed -i "s|\${MONGO_IP}|${{ secrets.MONGO_IP }}|g" k8s/database-endpoints.yaml
+          sed -i "s|\${POSTGRES_IP}|${{ secrets.POSTGRES_IP }}|g" k8s/database-endpoints.yaml
           
           # Replace passwords in secrets.yaml
           sed -i "s|\${POSTGRES_USER}|${{ secrets.POSTGRES_USER }}|g" k8s/secrets.yaml
@@ -66,11 +66,6 @@ jobs:
             kubectl apply -f k8s/secrets.yaml
           fi
 
-      - name: Deploy PostgreSQL
-        run: |
-          if [ -f k8s/postgres-deployment.yaml ]; then
-            kubectl apply -f k8s/postgres-deployment.yaml
-          fi
 
       - name: Replace image tags in manifests
         run: |
