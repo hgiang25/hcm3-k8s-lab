@@ -38,7 +38,7 @@ spec:
                   number: 4200
 
     # API Gateway
-    - host: api.redis-shopping.ntdevopsmlflow.io.vn
+    - host: api-redis-shopping.ntdevopsmlflow.io.vn
       http:
         paths:
           - path: /
