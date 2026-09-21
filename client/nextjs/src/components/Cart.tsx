@@ -40,33 +40,46 @@ export default function Cart({ refreshProducts, setAlertNotification }: CartProp
       setAlertNotification({ title: '', message: '' });
     }
 
-    const order = await createOrder(
-      cart.map((item) => {
-        return {
-          productId: item.product.productId,
-          qty: item.quantity,
-          productPrice: item.product.price,
-          storeId: item.product.storeId || ""
-        };
-      }),
-    );
+    try {
+      const order = await createOrder(
+        cart.map((item) => {
+          return {
+            productId: item.product.productId,
+            qty: item.quantity,
+            productPrice: item.product.price,
+            storeId: item.product.storeId || ""
+          };
+        }),
+      );
 
-    cartDispatch({
-      type: 'clear_cart',
-    });
+      if (order?.error) {
+        throw new Error(String(order.error));
+      }
 
-    toggleOpen();
-
-    if (setAlertNotification) {
-      setAlertNotification({
-        title: `Order #${order.data}`,
-        message:
-          'Order placed, click on the "Orders" tab to see your order status!',
+      cartDispatch({
+        type: 'clear_cart',
       });
-    }
 
-    if (refreshProducts) {
-      refreshProducts();
+      toggleOpen();
+
+      if (setAlertNotification) {
+        setAlertNotification({
+          title: `Order #${order.data}`,
+          message:
+            'Order placed, click on the "Orders" tab to see your order status!',
+        });
+      }
+
+      if (refreshProducts) {
+        refreshProducts();
+      }
+    } catch (err: any) {
+      if (setAlertNotification) {
+        setAlertNotification({
+          title: 'Order Failed',
+          message: err?.message || 'Something went wrong. Please try again.',
+        });
+      }
     }
   }
 
