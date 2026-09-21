@@ -43,32 +43,7 @@ interface IProductsVSSBodyFilter {
 }
 
 const getProductsByFilter = async (productFilter: Product) => {
-  const repository = ProductRepo.getRepository();
-  let products: IProduct[] = [];
-  if (repository) {
-    let queryBuilder = repository
-      .search()
-      .and('statusCode')
-      .eq(DB_ROW_STATUS.ACTIVE)
-      .and('stockQty')
-      .gt(0);
-
-    if (productFilter?.productDisplayName) {
-      queryBuilder = queryBuilder
-        .and('productDisplayName')
-        .matches(productFilter.productDisplayName)
-    }
-    else if (productFilter?.productId) {
-      queryBuilder = queryBuilder
-        .and('productId')
-        .eq(productFilter.productId)
-    }
-
-    console.log(queryBuilder.query);
-    products = <IProduct[]>await queryBuilder.sortAsc("productId").return.all();
-  }
-
-  return products;
+  return await getProductsByFilterFromDB(productFilter);
 };
 
 async function getProductsByFilterFromDB(productFilter: Product) {
@@ -112,19 +87,8 @@ const triggerResetInventory = async () => {
 }
 
 const getZipCodes = async () => {
-  const repository = ZipCodeRepo.getRepository();
-  let zipCodes: IZipCode[] = [];
-  if (repository) {
-    let queryBuilder = repository
-      .search()
-      .and('statusCode')
-      .eq(DB_ROW_STATUS.ACTIVE);
-
-    console.log(queryBuilder.query);
-    zipCodes = <IZipCode[]>await queryBuilder.sortAsc("zipCode").return.all();
-  }
-
-  return zipCodes;
+  // ZipCodes uses RediSearch. We are returning an empty array to bypass CMC Cloud Redis limitations.
+  return [];
 };
 
 const getSemanticProductsForStoreSearch = async (
@@ -533,10 +497,7 @@ const addProduct = async (productData: {
   });
 
   // 2. Save to Redis JSON for instant search/cache availability
-  if (redisClient) {
-    const productKey = ProductRepo.PRODUCT_KEY_PREFIX + ':' + insertedProduct.productId;
-    await redisClient.json.set(productKey, '.', insertedProduct as any);
-  }
+  // Disabled: redisClient.json.set requires RedisJSON module which is not available on CMC Cloud Redis.
 
   return insertedProduct;
 };
