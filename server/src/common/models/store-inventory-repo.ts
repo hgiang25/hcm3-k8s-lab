@@ -36,7 +36,7 @@ Redis OM uses hash to see if index needs to be recreated or not
 
 const createRedisIndex = async () => {
   const repository = getRepository();
-  // await repository.createIndex(); // Disabled for CMC Cloud Redis
+  await repository.createIndex();
 };
 
 export { getRepository, createRedisIndex, RedisEntityId, STORE_INVENTORY_KEY_PREFIX };
