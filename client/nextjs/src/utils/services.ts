@@ -45,7 +45,7 @@ export async function getOrderHistory(): Promise<models.Order[]> {
 
 export async function createOrder(
   order: Omit<models.OrderItem, 'productData'>[],
-): Promise<{ data: string }> {
+): Promise<{ data: string; error?: unknown }> {
   return await request(
     `${process.env.NEXT_PUBLIC_API_GATEWAY_URI}/orders/createOrder`,
     {
