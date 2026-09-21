@@ -51,8 +51,8 @@ jobs:
           sed -i "s|\${MONGO_IP}|${{ secrets.MONGO_IP }}|g" k8s/database-endpoints.yaml
           
           # Replace passwords in secrets.yaml
-          sed -i "s|\${MONGO_USER}|${{ secrets.MONGO_USER }}|g" k8s/secrets.yaml
-          sed -i "s|\${MONGO_PASSWORD}|${{ secrets.MONGO_PASSWORD }}|g" k8s/secrets.yaml
+          sed -i "s|\${POSTGRES_USER}|${{ secrets.POSTGRES_USER }}|g" k8s/secrets.yaml
+          sed -i "s|\${POSTGRES_PASSWORD}|${{ secrets.POSTGRES_PASSWORD }}|g" k8s/secrets.yaml
           sed -i "s|\${REDIS_PASSWORD}|${{ secrets.REDIS_PASSWORD }}|g" k8s/secrets.yaml
           
           # Apply the Internal DNS configuration
@@ -64,6 +64,12 @@ jobs:
           # Secrets should be pre-created via CLI, but apply template if exists
           if [ -f k8s/secrets.yaml ]; then
             kubectl apply -f k8s/secrets.yaml
+          fi
+
+      - name: Deploy PostgreSQL
+        run: |
+          if [ -f k8s/postgres-deployment.yaml ]; then
+            kubectl apply -f k8s/postgres-deployment.yaml
           fi
 
       - name: Replace image tags in manifests
