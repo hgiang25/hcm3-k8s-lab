@@ -57,6 +57,3 @@ spec:
     - port: 4200
       targetPort: 4200
   type: ClusterIP
-
-
-

@@ -15,9 +15,6 @@ spec:
       labels:
         app: order-history-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: order-history-service
           image: ${CONTAINER_REGISTRY}/order-history-service:latest

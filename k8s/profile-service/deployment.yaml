@@ -15,9 +15,6 @@ spec:
       labels:
         app: profile-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: profile-service
           image: ${CONTAINER_REGISTRY}/profile-service:latest

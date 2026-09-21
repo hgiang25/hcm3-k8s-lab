@@ -15,9 +15,6 @@ spec:
       labels:
         app: orders-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: orders-service
           image: ${CONTAINER_REGISTRY}/orders-service:latest

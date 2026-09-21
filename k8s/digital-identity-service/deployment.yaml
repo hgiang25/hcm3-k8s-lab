@@ -15,9 +15,6 @@ spec:
       labels:
         app: digital-identity-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: digital-identity-service
           image: ${CONTAINER_REGISTRY}/digital-identity-service:latest

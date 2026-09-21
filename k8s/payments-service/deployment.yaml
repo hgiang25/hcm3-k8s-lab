@@ -15,9 +15,6 @@ spec:
       labels:
         app: payments-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: payments-service
           image: ${CONTAINER_REGISTRY}/payments-service:latest

@@ -15,9 +15,6 @@ spec:
       labels:
         app: products-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: products-service
           image: ${CONTAINER_REGISTRY}/products-service:latest

@@ -15,9 +15,6 @@ spec:
       labels:
         app: api-gateway
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: api-gateway
           image: ${CONTAINER_REGISTRY}/api-gateway:latest
