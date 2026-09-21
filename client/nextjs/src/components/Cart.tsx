@@ -73,11 +73,12 @@ export default function Cart({ refreshProducts, setAlertNotification }: CartProp
       if (refreshProducts) {
         refreshProducts();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (setAlertNotification) {
+        const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
         setAlertNotification({
           title: 'Order Failed',
-          message: err?.message || 'Something went wrong. Please try again.',
+          message,
         });
       }
     }
