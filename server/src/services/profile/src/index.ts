@@ -29,6 +29,11 @@ app.post(API_PREFIX + '/login', login);
 
 import { setPrisma } from '../../../common/utils/prisma/prisma-wrapper';
 
+// Health check endpoint for Kubernetes probes
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({ status: 'ok', service: 'profile-service' });
+});
+
 app.listen(PORT, async () => {
   await setRedis(REDIS_URI);
   await setPrisma();

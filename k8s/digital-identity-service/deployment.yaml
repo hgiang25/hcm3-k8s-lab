@@ -15,6 +15,9 @@ spec:
       labels:
         app: digital-identity-service
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
       containers:
         - name: digital-identity-service
           image: hgyang25/digital-identity-service:latest
@@ -42,9 +45,23 @@ spec:
               value: "digital-identity-service"
           resources:
             requests:
+              cpu: 100m
               memory: 256Mi
             limits:
-              memory: 2Gi
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 20
+            periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
@@ -58,9 +75,3 @@ spec:
     - port: 3005
       targetPort: 3005
   type: ClusterIP
-
-
-
-
-
-
