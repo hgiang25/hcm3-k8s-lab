@@ -167,7 +167,7 @@ const addZipCodeDetailsInRedis = async (redisClient: NodeRedisClientType) => {
     }
     const id = CONFIG.ZIP_CODE_KEY_PREFIX + ':' + zipCodeData.zipCode;
     //@ts-ignore
-    await redisClient.json.set(id, '.', zipCodeData);
+    await redisClient.set(id, JSON.stringify(zipCodeData));
   }
 };
 
@@ -368,7 +368,7 @@ const addProductsToRandomStoresInRedis = async (
             '_' +
             product.productId;
           //@ts-ignore
-          await redisClient.json.set(id, '.', storesInventory);
+          await redisClient.set(id, JSON.stringify(storesInventory));
           // console.log(id);
 
           await addStoreInventoryToDatabase(prisma, storesInventory);
