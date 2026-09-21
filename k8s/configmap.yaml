@@ -31,7 +31,7 @@ data:
   FRONTEND_CLIENT_PORT: '4200'
   API_GATEWAY_URI: 'http://api-gateway:3000'
   # IMPORTANT: Update this to your actual production domain
-  NEXT_PUBLIC_API_GATEWAY_URI: 'https://api-redis-shopping.ntdevopsmlflow.io.vn'
+  NEXT_PUBLIC_API_GATEWAY_URI: 'https://api.redis-shopping.ntdevopsmlflow.io.vn'
 
   # Log level
   LOG_LEVEL: 'info'
