@@ -4,6 +4,7 @@ import {
   RedisSchema,
   RedisRepository,
   RedisEntityId,
+  getRedis
 } from '../utils/redis/redis-wrapper';
 
 const PROFILE_KEY_PREFIX = 'Profile';
@@ -105,8 +106,7 @@ const initialize = async () => {
   await createRedisIndex();
 
   const repository = getRepository();
-  const nodeRedisClient = getNodeRedisClient();
-  const existingProfiles = await nodeRedisClient?.keys(`${PROFILE_KEY_PREFIX}:*`);
+  const existingProfiles = await getRedis().getKeys(`${PROFILE_KEY_PREFIX}:*`);
 
   if (!existingProfiles || existingProfiles.length === 0) {
     DEFAULT_PROFILES.forEach(async (profile) => {
