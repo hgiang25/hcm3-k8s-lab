@@ -9,6 +9,23 @@ on:
       - 'cdn/**'
       - 'dockerfile-*'
   workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to deploy'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - api-gateway
+          - orders
+          - order-history
+          - products
+          - payments
+          - digital-identity
+          - profile
+          - client
+          - cdn
 
 permissions:
   packages: write
@@ -22,15 +39,15 @@ jobs:
     name: Detect changed services
     runs-on: ubuntu-latest
     outputs:
-      api-gateway: ${{ steps.changes.outputs.api-gateway }}
-      orders: ${{ steps.changes.outputs.orders }}
-      order-history: ${{ steps.changes.outputs.order-history }}
-      products: ${{ steps.changes.outputs.products }}
-      payments: ${{ steps.changes.outputs.payments }}
-      digital-identity: ${{ steps.changes.outputs.digital-identity }}
-      profile: ${{ steps.changes.outputs.profile }}
-      client: ${{ steps.changes.outputs.client }}
-      cdn: ${{ steps.changes.outputs.cdn }}
+      api-gateway: ${{ steps.final-changes.outputs.api-gateway }}
+      orders: ${{ steps.final-changes.outputs.orders }}
+      order-history: ${{ steps.final-changes.outputs.order-history }}
+      products: ${{ steps.final-changes.outputs.products }}
+      payments: ${{ steps.final-changes.outputs.payments }}
+      digital-identity: ${{ steps.final-changes.outputs.digital-identity }}
+      profile: ${{ steps.final-changes.outputs.profile }}
+      client: ${{ steps.final-changes.outputs.client }}
+      cdn: ${{ steps.final-changes.outputs.cdn }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -71,6 +88,47 @@ jobs:
             cdn:
               - 'cdn/**'
               - 'dockerfile-cdn'
+      - id: final-changes
+        run: |
+          # Default to the output of paths-filter
+          echo "api-gateway=${{ steps.changes.outputs.api-gateway }}" >> $GITHUB_OUTPUT
+          echo "orders=${{ steps.changes.outputs.orders }}" >> $GITHUB_OUTPUT
+          echo "order-history=${{ steps.changes.outputs.order-history }}" >> $GITHUB_OUTPUT
+          echo "products=${{ steps.changes.outputs.products }}" >> $GITHUB_OUTPUT
+          echo "payments=${{ steps.changes.outputs.payments }}" >> $GITHUB_OUTPUT
+          echo "digital-identity=${{ steps.changes.outputs.digital-identity }}" >> $GITHUB_OUTPUT
+          echo "profile=${{ steps.changes.outputs.profile }}" >> $GITHUB_OUTPUT
+          echo "client=${{ steps.changes.outputs.client }}" >> $GITHUB_OUTPUT
+          echo "cdn=${{ steps.changes.outputs.cdn }}" >> $GITHUB_OUTPUT
+          
+          # Override if workflow_dispatch
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            SERVICE="${{ github.event.inputs.service }}"
+            if [ "$SERVICE" == "all" ]; then
+              echo "api-gateway=true" >> $GITHUB_OUTPUT
+              echo "orders=true" >> $GITHUB_OUTPUT
+              echo "order-history=true" >> $GITHUB_OUTPUT
+              echo "products=true" >> $GITHUB_OUTPUT
+              echo "payments=true" >> $GITHUB_OUTPUT
+              echo "digital-identity=true" >> $GITHUB_OUTPUT
+              echo "profile=true" >> $GITHUB_OUTPUT
+              echo "client=true" >> $GITHUB_OUTPUT
+              echo "cdn=true" >> $GITHUB_OUTPUT
+            else
+              # Set only the selected service to true
+              echo "api-gateway=false" >> $GITHUB_OUTPUT
+              echo "orders=false" >> $GITHUB_OUTPUT
+              echo "order-history=false" >> $GITHUB_OUTPUT
+              echo "products=false" >> $GITHUB_OUTPUT
+              echo "payments=false" >> $GITHUB_OUTPUT
+              echo "digital-identity=false" >> $GITHUB_OUTPUT
+              echo "profile=false" >> $GITHUB_OUTPUT
+              echo "client=false" >> $GITHUB_OUTPUT
+              echo "cdn=false" >> $GITHUB_OUTPUT
+              
+              echo "${SERVICE}=true" >> $GITHUB_OUTPUT
+            fi
+          fi
 
   build-api-gateway:
     name: Build API Gateway
@@ -279,7 +337,7 @@ jobs:
   build-cdn:
     name: Build CDN
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.cdn == 'true' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ needs.detect-changes.outputs.cdn == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -335,33 +393,33 @@ jobs:
         run: kubectl config use-context application-cluster-admin@application-cluster
 
       - name: Deploy API Gateway
-        if: ${{ needs.detect-changes.outputs.api-gateway == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.detect-changes.outputs.api-gateway == 'true' }}
         run: kubectl set image deployment/api-gateway api-gateway=${REGISTRY}/api-gateway:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Orders Service
-        if: ${{ needs.detect-changes.outputs.orders == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.detect-changes.outputs.orders == 'true' }}
         run: kubectl set image deployment/orders-service orders-service=${REGISTRY}/orders-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Order History Service
-        if: ${{ needs.detect-changes.outputs.order-history == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.detect-changes.outputs.order-history == 'true' }}
         run: kubectl set image deployment/order-history-service order-history-service=${REGISTRY}/order-history-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Products Service
-        if: ${{ needs.detect-changes.outputs.products == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.detect-changes.outputs.products == 'true' }}
         run: kubectl set image deployment/products-service products-service=${REGISTRY}/products-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Payments Service
-        if: ${{ needs.detect-changes.outputs.payments == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.detect-changes.outputs.payments == 'true' }}
         run: kubectl set image deployment/payments-service payments-service=${REGISTRY}/payments-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Digital Identity Service
-        if: ${{ needs.detect-changes.outputs.digital-identity == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.detect-changes.outputs.digital-identity == 'true' }}
         run: kubectl set image deployment/digital-identity-service digital-identity-service=${REGISTRY}/digital-identity-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Profile Service
-        if: ${{ needs.detect-changes.outputs.profile == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.detect-changes.outputs.profile == 'true' }}
         run: kubectl set image deployment/profile-service profile-service=${REGISTRY}/profile-service:${TAG} -n ${NAMESPACE}
 
       - name: Deploy Client (Frontend)
-        if: ${{ needs.detect-changes.outputs.client == 'true' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ needs.detect-changes.outputs.client == 'true' }}
         run: kubectl set image deployment/client client=${REGISTRY}/client:${TAG} -n ${NAMESPACE}
