@@ -21,7 +21,6 @@ on:
           - digital-identity-service
           - profile-service
           - client
-          - logging
 
 env:
   K8S_NAMESPACE: ecommerce
@@ -117,10 +116,6 @@ jobs:
         if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'client' }}
         run: kubectl apply -f k8s/client/
 
-      - name: Deploy Logging Stack
-        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'logging' }}
-        run: kubectl apply -f k8s/logging/
-
       - name: Deploy Ingress Controllers and Rules
         if: ${{ github.event.inputs.deploy_target == 'all' }}
         run: |
@@ -150,8 +145,6 @@ jobs:
           kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/orders-service --timeout=300s
           kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/products-service --timeout=300s
           kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/client --timeout=300s
-          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/loki --timeout=300s
-          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/grafana --timeout=300s
           echo "All deployments are ready!"
 
       - name: Show deployment status
