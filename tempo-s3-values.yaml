@@ -1,0 +1,22 @@
+tempo:
+  # Cấu hình storage backend của Tempo trỏ về S3
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: hcm3-bucket-lab-k8s
+        endpoint: s3.hcm-5.cloud.cmctelecom.vn
+        insecure: false
+
+# Nạp chung thông tin xác thực từ Secret của Loki
+env:
+  - name: AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: loki-s3-credentials
+        key: AWS_ACCESS_KEY_ID
+  - name: AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: loki-s3-credentials
+        key: AWS_SECRET_ACCESS_KEY
