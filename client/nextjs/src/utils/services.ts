@@ -72,6 +72,33 @@ export async function getProducts(_productDisplayName?: string, _productId?: str
   return result.data?.map((product) => product) ?? [];
 }
 
+// Paged variant used by the storefront home page, so it no longer has to load every
+// product (previously ~1000) in a single request. page is 1-based.
+export async function getProductsPaged(
+  _productDisplayName?: string,
+  _productId?: string,
+  _page: number = 1,
+  _limit: number = 24,
+): Promise<{ data: models.Product[]; totalCount: number }> {
+  const result: api.ProductResponse = await request(
+    `${process.env.NEXT_PUBLIC_API_GATEWAY_URI}/products/getProductsByFilter`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        productDisplayName: _productDisplayName || "",
+        productId: _productId || "",
+        page: _page,
+        limit: _limit,
+      }),
+    },
+  );
+
+  return {
+    data: result.data?.map((product) => product) ?? [],
+    totalCount: result.totalCount ?? 0,
+  };
+}
+
 export async function triggerResetInventory(): Promise<string> {
   const result: string = await request(
     `${process.env.NEXT_PUBLIC_API_GATEWAY_URI}/products/triggerResetInventory`,

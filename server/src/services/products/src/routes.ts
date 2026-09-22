@@ -3,7 +3,7 @@ import type { IApiResponseBody } from '../../../common/config/server-config';
 import express, { Request, Response } from 'express';
 
 import {
-  getProductsByFilter, triggerResetInventory,
+  getProductsByFilter, getProductsCountByFilter, triggerResetInventory,
   getZipCodes, getStoreProductsByGeoFilter,
   chatBot, getChatHistory,
   getProductsByVSSText, getProductsByVSSImageSummary,
@@ -27,6 +27,10 @@ router.post(
       isFromCache: false,
     };
 
+    // page & limit are optional. They are only sent by the storefront home page (to avoid loading
+    // every product at once) - any other/older caller that omits them keeps the exact same behaviour.
+    const isPaginated = !!(body?.page && body?.limit);
+
     try {
       const cachedData = await RedisCacheAside.getDataFromRedis(body);
       if (cachedData && cachedData.length) {
@@ -44,6 +48,12 @@ router.post(
           ); //set async
         }
         result.data = dbData;
+      }
+
+      if (isPaginated) {
+        // total count is cheap (COUNT query) and always computed fresh, since stock/status
+        // can change between requests and it is not worth caching separately.
+        result.totalCount = await getProductsCountByFilter(body);
       }
     } catch (err) {
       const pureErr = LoggerCls.getPureError(err);

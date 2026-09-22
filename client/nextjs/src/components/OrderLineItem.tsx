@@ -10,17 +10,17 @@ export default function OrderLineItem({ item }: Props) {
 
   if (!product) {
     return (
-      <div className="flex flex-col md:flex-row justify-start items-start md:items-center w-full border-b px-2 border-gray-200 py-4">
+      <div className="flex flex-col md:flex-row justify-start items-start md:items-center w-full border-b px-2 border-terracotta-100 py-4">
         <p className="text-red-500">Product details unavailable (ID: {item.productId})</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col md:flex-row justify-start items-start md:items-center w-full border-b px-2 border-gray-200">
+    <div className="flex flex-col md:flex-row justify-start items-start md:items-center w-full border-b px-2 border-terracotta-100">
       <div className="w-32">
         <Image
-          className="rounded-t-lg"
+          className="rounded-lg"
           src={product.styleImages_default_imageURL}
           alt={product.productDisplayName}
           width={480}
@@ -29,15 +29,15 @@ export default function OrderLineItem({ item }: Props) {
       </div>
       <div className="flex flex-col md:flex-row items-start w-full space-y-4 md:space-y-0">
         <div className="flex flex-col justify-start items-start w-full space-y-8">
-          <h5 className="text-lg font-semibold leading-6 text-gray-800">
+          <h5 className="text-lg font-semibold leading-6 text-ink-800">
             {product.productDisplayName}
           </h5>
         </div>
         <div className="flex space-x-8 justify-end items-start w-full">
-          <p className="text-base xl:text-lg leading-6">
+          <p className="text-base xl:text-lg leading-6 text-ink-700">
             {toCurrency(product.price)} x {item.qty}
           </p>
-          <p className="text-base xl:text-lg leading-6 font-semibold">
+          <p className="text-base xl:text-lg leading-6 font-semibold text-ink-800">
             {toCurrency(product.price * item.qty)}
           </p>
         </div>

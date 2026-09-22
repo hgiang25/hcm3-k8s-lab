@@ -18,6 +18,7 @@ declare namespace api {
   interface Response<T> {
     error: Error;
     data: T;
+    totalCount?: number;
   }
 
   interface ISortedSet {

@@ -1,3 +1,76 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: theme('colors.cream.50');
+}
+
+/* subtle decorative corner frame, inspired by Vietnamese lacquerware motifs - used sparingly */
+.deco-frame {
+  position: relative;
+}
+.deco-frame::before,
+.deco-frame::after {
+  content: '';
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 2px solid theme('colors.terracotta.300');
+  opacity: 0.6;
+  pointer-events: none;
+}
+.deco-frame::before {
+  top: 10px;
+  left: 10px;
+  border-right: none;
+  border-bottom: none;
+}
+.deco-frame::after {
+  bottom: 10px;
+  right: 10px;
+  border-left: none;
+  border-top: none;
+}
+
+/* Hero image overlay for dark sections */
+.hero-overlay {
+  background: linear-gradient(
+    to right,
+    rgba(42, 29, 20, 0.78) 0%,
+    rgba(42, 29, 20, 0.45) 50%,
+    transparent 100%
+  );
+}
+
+/* Product card entry animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.45s ease both;
+}
+
+/* Shimmer loading skeleton */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, theme('colors.cream.100') 25%, theme('colors.cream.50') 50%, theme('colors.cream.100') 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite;
+}
