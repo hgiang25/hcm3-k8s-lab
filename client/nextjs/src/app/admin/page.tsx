@@ -486,7 +486,7 @@ export default function Home() {
                                     <div className="h-56 flex flex-col items-center justify-center border-2 border-dashed border-terracotta-200 rounded-xl text-ink-500 bg-cream-50 p-4 text-center">
                                         <span className="text-3xl mb-2">📊</span>
                                         <p className="text-sm font-semibold">Chưa có dữ liệu theo thương hiệu</p>
-                                        <p className="text-xs text-ink-400 mt-1">Bấm "Nạp Dữ Liệu Mẫu" ở trên để xem thử biểu đồ</p>
+                                        <p className="text-xs text-ink-400 mt-1">Bấm &quot;Nạp Dữ Liệu Mẫu&quot; ở trên để xem thử biểu đồ</p>
                                     </div>
                                 )}
                             </div>
@@ -503,7 +503,7 @@ export default function Home() {
                                     <div className="h-56 flex flex-col items-center justify-center border-2 border-dashed border-terracotta-200 rounded-xl text-ink-500 bg-cream-50 p-4 text-center">
                                         <span className="text-3xl mb-2">🏷️</span>
                                         <p className="text-sm font-semibold">Chưa có dữ liệu theo danh mục</p>
-                                        <p className="text-xs text-ink-400 mt-1">Bấm "Nạp Dữ Liệu Mẫu" ở trên để xem thử biểu đồ</p>
+                                        <p className="text-xs text-ink-400 mt-1">Bấm &quot;Nạp Dữ Liệu Mẫu&quot; ở trên để xem thử biểu đồ</p>
                                     </div>
                                 )}
                             </div>
