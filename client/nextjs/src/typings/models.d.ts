@@ -11,6 +11,8 @@ declare namespace models {
     qty: number;
     productPrice: number;
     productData: Product;
+    storeId?: string;
+    storeName?: string;
   }
 
   interface Order {

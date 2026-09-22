@@ -61,44 +61,9 @@ const addDigitalIdentityToRedis = async (
 };
 
 const calculateIdentityScore = async (message: ITransactionStreamMessage) => {
-  let identityScore = 0;
-  const repository = digitalIdentityRepo.getRepository();
-
-  if (message && message.userId && repository) {
-    let queryBuilder = repository
-      .search()
-      .where('userId')
-      .eq(message.userId)
-      .and('action')
-      .eq(TransactionStreamActions.INSERT_LOGIN_IDENTITY)
-      .and('statusCode')
-      .eq(DB_ROW_STATUS.ACTIVE);
-
-    const digitalIdentities = await queryBuilder.return.all();
-
-    if (digitalIdentities && digitalIdentities.length) {
-      const matchBrowserItems = digitalIdentities.filter((_digIdent) => {
-        return (
-          _digIdent.browserFingerprint ==
-          CryptoCls.hashString(message.identityBrowserAgent)
-        );
-      });
-      if (matchBrowserItems.length > 0) {
-        identityScore += 1;
-      }
-
-      const matchIpAddressItems = digitalIdentities.filter((_digIdent) => {
-        return _digIdent.ipAddress == message.identityIpAddress;
-      });
-      if (matchIpAddressItems.length > 0) {
-        identityScore += 1;
-      }
-    }
-  }
-
-  const noOfIdentityCharacteristics = 2; //2 == browserFingerprint, ipAddress
-  identityScore = identityScore / noOfIdentityCharacteristics;
-  return identityScore; // identityScore value from 0 to 1
+  // Bypassed identity scoring because CMC Cloud Redis does not support RediSearch.
+  // Returning a default average score.
+  return 0.5;
 };
 
 const insertLoginIdentity: IMessageHandler = async (

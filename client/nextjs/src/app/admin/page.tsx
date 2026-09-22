@@ -334,46 +334,46 @@ export default function Home() {
                 <div className="max-w-screen-xl mx-auto p-6 pt-16">
 
                     {/* ===== ADD PRODUCT SECTION ===== */}
-                    <div className="mb-8 p-6 bg-white rounded-lg shadow-lg border border-neutral-200">
-                        <h2 className="text-xl font-bold uppercase mb-4">🛍️ Add New Product</h2>
+                    <div className="mb-8 p-6 bg-white rounded-xl shadow-card border border-terracotta-100">
+                        <h2 className="text-xl font-display font-bold uppercase mb-4 text-ink-800">🛍️ Add New Product</h2>
 
                         {addProductMsg && (
-                            <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">{addProductMsg}</div>
+                            <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-lg">{addProductMsg}</div>
                         )}
                         {addProductError && (
-                            <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">❌ {addProductError}</div>
+                            <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-lg">❌ {addProductError}</div>
                         )}
 
                         <form onSubmit={handleAddProduct}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Product Name *</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Product Name *</label>
                                     <input type="text" name="productDisplayName" value={productForm.productDisplayName}
                                         onChange={handleFormChange} required
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Nike Air Max 90" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="e.g. Nike Air Max 90" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Price *</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Price *</label>
                                     <input type="number" name="price" value={productForm.price}
                                         onChange={handleFormChange} required min="1"
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. 2500" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="e.g. 2500" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Brand Name</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Brand Name</label>
                                     <input type="text" name="brandName" value={productForm.brandName}
                                         onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Nike" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="e.g. Nike" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Variant Name</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Variant Name</label>
                                     <input type="text" name="variantName" value={productForm.variantName}
                                         onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Black Edition" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="e.g. Black Edition" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Gender</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Gender</label>
                                     <select name="gender" value={productForm.gender} onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300">
                                         <option value="">-- Select --</option>
                                         <option value="Men">Men</option>
                                         <option value="Women">Women</option>
@@ -381,9 +381,9 @@ export default function Home() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Age Group</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Age Group</label>
                                     <select name="ageGroup" value={productForm.ageGroup} onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300">
                                         <option value="">-- Select --</option>
                                         <option value="Adults-Men">Adults-Men</option>
                                         <option value="Adults-Women">Adults-Women</option>
@@ -392,51 +392,51 @@ export default function Home() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Category</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Category</label>
                                     <input type="text" name="displayCategories" value={productForm.displayCategories}
                                         onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Casual Wear" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="e.g. Casual Wear" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Master Category</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Master Category</label>
                                     <input type="text" name="masterCategory_typeName" value={productForm.masterCategory_typeName}
                                         onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Apparel" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="e.g. Apparel" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Sub Category</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Sub Category</label>
                                     <input type="text" name="subCategory_typeName" value={productForm.subCategory_typeName}
                                         onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Topwear" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="e.g. Topwear" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Stock Quantity</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Stock Quantity</label>
                                     <input type="number" name="stockQty" value={productForm.stockQty}
                                         onChange={handleFormChange} min="0"
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Image URL</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Image URL</label>
                                     <input type="text" name="styleImages_default_imageURL" value={productForm.styleImages_default_imageURL}
                                         onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="https://example.com/image.jpg" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="https://example.com/image.jpg" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Colors</label>
+                                    <label className="block text-sm font-semibold mb-1 text-ink-700">Colors</label>
                                     <input type="text" name="productColors" value={productForm.productColors}
                                         onChange={handleFormChange}
-                                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Black, White, Red" />
+                                        className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="e.g. Black, White, Red" />
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <label className="block text-sm font-semibold mb-1">Description</label>
+                                <label className="block text-sm font-semibold mb-1 text-ink-700">Description</label>
                                 <textarea name="productDescriptors_description_value" value={productForm.productDescriptors_description_value}
                                     onChange={handleFormChange} rows={3}
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Product description..." />
+                                    className="w-full border border-terracotta-100 rounded-lg px-3 py-2 text-sm text-ink-800 focus:outline-none focus:border-terracotta-300" placeholder="Product description..." />
                             </div>
                             <div className="mt-4">
                                 <button type="submit" disabled={isSubmitting}
-                                    className="inline-block rounded bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 px-6 py-2.5 text-sm font-semibold uppercase leading-normal text-white shadow-md">
+                                    className="inline-block rounded-full bg-terracotta-500 hover:bg-terracotta-600 disabled:bg-gray-400 px-6 py-2.5 text-sm font-semibold uppercase tracking-wide leading-normal text-white shadow-md transition-colors">
                                     {isSubmitting ? 'Adding...' : '➕ Add Product'}
                                 </button>
                             </div>
@@ -444,10 +444,10 @@ export default function Home() {
                     </div>
 
                     {/* ===== DASHBOARD STATS SECTION ===== */}
-                    <div className="mb-2 flex justify-between">
-                        <h5 className="font-bold uppercase">
+                    <div className="mb-2 flex justify-between items-center">
+                        <h5 className="font-bold uppercase text-ink-800">
                             Total Purchase Amount :
-                            <span className="text-sm pl-1">
+                            <span className="text-sm pl-1 font-normal text-ink-700">
                                 {toCurrency(orderStats?.totalPurchaseAmount)}
                             </span>
                         </h5>
@@ -455,29 +455,29 @@ export default function Home() {
                         <button
                             type="button"
                             onClick={refreshBtnClick}
-                            className="inline-block rounded bg-slate-300 hover:bg-slate-400 px-4 pt-2 pb-2 text-xs font-semibold uppercase leading-normal text-black">
+                            className="inline-block rounded-full border border-terracotta-300 text-terracotta-700 hover:bg-terracotta-50 px-4 pt-2 pb-2 text-xs font-semibold uppercase tracking-wide leading-normal transition-colors">
                             Refresh Stats
                         </button>
                     </div>
 
-                    <hr />
+                    <hr className="border-terracotta-100" />
 
-                    <div className="pt-3 flex justify-between">
+                    <div className="pt-3 flex justify-between flex-wrap gap-4">
                         <div>
-                            <div className="font-bold uppercase">
+                            <div className="font-bold uppercase text-ink-800">
                                 Brand wise revenue
                             </div>
-                            <div style={{ width: "500px" }}>
+                            <div style={{ width: "500px", maxWidth: "100%" }}>
                                 {//@ts-ignore
                                     <Doughnut data={brandPurchaseChart.chartData} options={brandPurchaseChart.chartOptions} />
                                 }
                             </div>
                         </div>
                         <div>
-                            <div className="font-bold uppercase">
+                            <div className="font-bold uppercase text-ink-800">
                                 Category wise interests
                             </div>
-                            <div style={{ width: "500px" }}>
+                            <div style={{ width: "500px", maxWidth: "100%" }}>
                                 {//@ts-ignore
                                     <PolarArea data={categoryPurchaseChart.chartData} options={categoryPurchaseChart.chartOptions} />
                                 }
@@ -486,10 +486,10 @@ export default function Home() {
 
                     </div>
 
-                    <hr />
+                    <hr className="border-terracotta-100 mt-3" />
 
                     <div className="pt-3">
-                        <div className="font-bold uppercase">
+                        <div className="font-bold uppercase text-ink-800">
                             Top Trending Products
                         </div>
                         {/* <div style={{ height: "400px" }}>
@@ -499,21 +499,21 @@ export default function Home() {
                         </div> */}
                         <div className="pt-3 flex flex-wrap justify-start">
                             {orderStats?.products?.map((product) => (
-                                <div key={product.productId} className="block max-w-sm rounded bg-white shadow-lg border border-neutral-200 m-2">
+                                <div key={product.productId} className="block max-w-sm rounded-xl bg-white shadow-card border border-terracotta-100 m-2 overflow-hidden">
                                     <Image
-                                        className="rounded-t-lg w-auto mx-auto"
+                                        className="w-auto mx-auto"
                                         style={{ height: '160px' }}
                                         src={product.styleImages_default_imageURL}
                                         alt={product.productDisplayName}
                                         width={480}
                                         height={640}
                                     />
-                                    <hr />
-                                    <div className="p-6 bg-slate-100">
-                                        <h5 className="mb-2 h-20 text-xl font-medium leading-tight text-neutral-800">
+                                    <hr className="border-terracotta-100" />
+                                    <div className="p-6 bg-cream-100">
+                                        <h5 className="mb-2 h-20 text-lg font-display font-semibold leading-tight text-ink-800">
                                             {product.productDisplayName}
                                         </h5>
-                                        <p className="mb-4 text-base text-neutral-600">
+                                        <p className="mb-4 text-sm text-ink-600">
                                             {getShortName(product.productDescriptors_description_value)}
                                         </p>
                                     </div>

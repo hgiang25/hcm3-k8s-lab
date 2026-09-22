@@ -52,7 +52,7 @@ const addProductToPrismaDBAndRedis = async (
             // insert product to Redis
             const productKey =
                 CONFIG.PRODUCT_KEY_PREFIX + ':' + insertedProduct.productId;
-            await redisClient.json.set(productKey, '.', insertedProduct);
+            await redisClient.set(productKey, JSON.stringify(insertedProduct));
         }
     }
 

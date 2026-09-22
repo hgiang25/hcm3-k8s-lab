@@ -15,12 +15,9 @@ spec:
       labels:
         app: profile-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: profile-service
-          image: hgyang25/profile-service:latest
+          image: ${CONTAINER_REGISTRY}/profile-service:latest
           ports:
             - containerPort: 3006
           envFrom:
@@ -32,7 +29,7 @@ spec:
             - name: OTEL_TRACES_EXPORTER
               value: "otlp"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://10.0.30.65:30417"
+              value: "http://jaeger-collector.monitoring.svc.cluster.local:4317"
             - name: OTEL_METRICS_EXPORTER
               value: "none"
             - name: OTEL_LOGS_EXPORTER

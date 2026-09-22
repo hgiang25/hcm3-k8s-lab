@@ -30,15 +30,15 @@ export default function Alert({
   }
 
   return (
-    <div className="fixed top-0 left-0 right-0 mx-auto">
+    <div className="fixed top-16 left-0 right-0 mx-auto z-50">
       <div
-        className="pointer-events-auto mx-auto mb-4 block w-96 max-w-full rounded-lg bg-orange-100 bg-clip-padding text-sm text-green-700 shadow-lg shadow-black/5"
+        className="pointer-events-auto mx-auto mb-4 block w-96 max-w-full rounded-lg bg-white bg-clip-padding text-sm text-ink-800 shadow-card"
         id="static-example"
         role="alert"
         aria-live="assertive"
         aria-atomic="true">
-        <div className="flex items-center justify-between rounded-t-lg border-b-2 border-orange-200 bg-orange-100 bg-clip-padding px-4 pt-2.5 pb-2 text-green-700">
-          <p className="flex items-center font-bold text-green-700">
+        <div className="flex items-center justify-between rounded-t-lg border-b-2 border-terracotta-200 bg-terracotta-50 bg-clip-padding px-4 pt-2.5 pb-2 text-terracotta-700">
+          <p className="flex items-center font-bold text-terracotta-700">
             <svg
               aria-hidden="true"
               focusable="false"
@@ -78,7 +78,7 @@ export default function Alert({
             </button>
           </div>
         </div>
-        <div className="break-words rounded-b-lg bg-orange-100 py-4 px-4 text-green-700">
+        <div className="break-words rounded-b-lg bg-white py-4 px-4 text-ink-700">
           {message}
         </div>
       </div>

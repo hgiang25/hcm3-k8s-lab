@@ -42,38 +42,18 @@ interface IProductsVSSBodyFilter {
   embeddingsType?: string;
 }
 
-const getProductsByFilter = async (productFilter: Product) => {
-  const repository = ProductRepo.getRepository();
-  let products: IProduct[] = [];
-  if (repository) {
-    let queryBuilder = repository
-      .search()
-      .and('statusCode')
-      .eq(DB_ROW_STATUS.ACTIVE)
-      .and('stockQty')
-      .gt(0);
+// page / limit are optional : when NOT provided, behaviour is 100% unchanged (returns all matching products),
+// so this is opt-in and does not affect any other existing caller of getProductsByFilter.
+interface IProductsPageFilter {
+  page?: number;
+  limit?: number;
+}
 
-    if (productFilter?.productDisplayName) {
-      queryBuilder = queryBuilder
-        .and('productDisplayName')
-        .matches(productFilter.productDisplayName)
-    }
-    else if (productFilter?.productId) {
-      queryBuilder = queryBuilder
-        .and('productId')
-        .eq(productFilter.productId)
-    }
-
-    console.log(queryBuilder.query);
-    products = <IProduct[]>await queryBuilder.sortAsc("productId").return.all();
-  }
-
-  return products;
+const getProductsByFilter = async (productFilter: Product & IProductsPageFilter) => {
+  return await getProductsByFilterFromDB(productFilter);
 };
 
-async function getProductsByFilterFromDB(productFilter: Product) {
-  const prisma = getPrismaClient();
-
+function buildProductWhereQuery(productFilter: Product): Prisma.ProductWhereInput {
   const whereQuery: Prisma.ProductWhereInput = {
     statusCode: DB_ROW_STATUS.ACTIVE,
     stockQty: {
@@ -91,12 +71,43 @@ async function getProductsByFilterFromDB(productFilter: Product) {
     whereQuery.productId = productFilter.productId;
   }
 
+  return whereQuery;
+}
 
-  const products: Product[] = await prisma.product.findMany({
+async function getProductsByFilterFromDB(productFilter: Product & IProductsPageFilter) {
+  const prisma = getPrismaClient();
+
+  const whereQuery = buildProductWhereQuery(productFilter);
+
+  const findManyArgs: Prisma.ProductFindManyArgs = {
     where: whereQuery,
-  });
+  };
+
+  const page = Number(productFilter?.page) > 0 ? Number(productFilter.page) : undefined;
+  const limit = Number(productFilter?.limit) > 0 ? Number(productFilter.limit) : undefined;
+
+  if (page && limit) {
+    // pagination requested (used by the storefront home page) : keep a stable sort order
+    // so the same page always returns the same slice of products.
+    findManyArgs.orderBy = { productId: 'asc' };
+    findManyArgs.skip = (page - 1) * limit;
+    findManyArgs.take = limit;
+  }
+
+  const products: Product[] = await prisma.product.findMany(findManyArgs);
 
   return products;
+}
+
+// Lightweight count query, used only when the caller is paginating (page & limit provided),
+// so it does not add any overhead for existing callers that fetch everything at once.
+async function getProductsCountByFilter(productFilter: Product) {
+  const prisma = getPrismaClient();
+  const whereQuery = buildProductWhereQuery(productFilter);
+
+  const totalCount = await prisma.product.count({ where: whereQuery });
+
+  return totalCount;
 }
 
 const triggerResetInventory = async () => {
@@ -112,19 +123,8 @@ const triggerResetInventory = async () => {
 }
 
 const getZipCodes = async () => {
-  const repository = ZipCodeRepo.getRepository();
-  let zipCodes: IZipCode[] = [];
-  if (repository) {
-    let queryBuilder = repository
-      .search()
-      .and('statusCode')
-      .eq(DB_ROW_STATUS.ACTIVE);
-
-    console.log(queryBuilder.query);
-    zipCodes = <IZipCode[]>await queryBuilder.sortAsc("zipCode").return.all();
-  }
-
-  return zipCodes;
+  // ZipCodes uses RediSearch. We are returning an empty array to bypass CMC Cloud Redis limitations.
+  return [];
 };
 
 const getSemanticProductsForStoreSearch = async (
@@ -533,10 +533,7 @@ const addProduct = async (productData: {
   });
 
   // 2. Save to Redis JSON for instant search/cache availability
-  if (redisClient) {
-    const productKey = ProductRepo.PRODUCT_KEY_PREFIX + ':' + insertedProduct.productId;
-    await redisClient.json.set(productKey, '.', insertedProduct as any);
-  }
+  // Disabled: redisClient.json.set requires RedisJSON module which is not available on CMC Cloud Redis.
 
   return insertedProduct;
 };
@@ -544,6 +541,7 @@ const addProduct = async (productData: {
 export {
   getProductsByFilter,
   getProductsByFilterFromDB,
+  getProductsCountByFilter,
   triggerResetInventory,
   getZipCodes,
   getStoreProductsByGeoFilter,

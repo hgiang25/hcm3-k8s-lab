@@ -15,12 +15,9 @@ spec:
       labels:
         app: order-history-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: order-history-service
-          image: hgyang25/order-history-service:latest
+          image: ${CONTAINER_REGISTRY}/order-history-service:latest
           ports:
             - containerPort: 3002
           envFrom:
@@ -32,7 +29,7 @@ spec:
             - name: OTEL_TRACES_EXPORTER
               value: "otlp"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://10.0.30.65:30417"
+              value: "http://jaeger-collector.monitoring.svc.cluster.local:4317"
             - name: OTEL_METRICS_EXPORTER
               value: "none"
             - name: OTEL_LOGS_EXPORTER

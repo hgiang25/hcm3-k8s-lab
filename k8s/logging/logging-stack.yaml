@@ -80,8 +80,11 @@ metadata:
 data:
   local-config.yaml: |
     auth_enabled: false
+    
     server:
       http_listen_port: 3100
+      grpc_listen_port: 9096
+    
     common:
       instance_addr: 127.0.0.1
       path_prefix: /tmp/loki
@@ -93,6 +96,14 @@ data:
       ring:
         kvstore:
           store: inmemory
+    
+    query_range:
+      results_cache:
+        cache:
+          embedded_cache:
+            enabled: true
+            max_size_mb: 100
+    
     schema_config:
       configs:
         - from: 2020-10-24
@@ -102,9 +113,15 @@ data:
           index:
             prefix: index_
             period: 24h
+    
+    ruler:
+      alertmanager_url: http://localhost:9093
+    
     limits_config:
       reject_old_samples: true
       reject_old_samples_max_age: 168h
+      max_query_length: 721h
+    
     analytics:
       reporting_enabled: false
 
@@ -197,23 +214,36 @@ data:
     server:
       http_listen_port: 9080
       grpc_listen_port: 0
+    
     positions:
       filename: /tmp/positions.yaml
+    
     clients:
       - url: http://10.0.30.65:30100/loki/api/v1/push
+    
     scrape_configs:
-      - job_name: kubernetes-pods
-        kubernetes_sd_configs:
-          - role: pod
+      # Collect logs from all Docker containers via their log files
+      - job_name: docker
+        static_configs:
+          - targets:
+              - localhost
+            labels:
+              job: docker
+              __path__: /var/log/docker/*log
+    
+      # Collect logs from Docker containers using the Docker service discovery
+      - job_name: containers
+        docker_sd_configs:
+          - host: unix:///var/run/docker.sock
+            refresh_interval: 5s
         relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - source_labels: [__meta_kubernetes_pod_name]
-            target_label: pod
-          - source_labels: [__meta_kubernetes_namespace]
-            target_label: namespace
-        pipeline_stages:
-          - docker: {}
+          # Extract container name as a label
+          - source_labels: ['__meta_docker_container_name']
+            regex: '/(.*)'
+            target_label: 'container'
+          # Extract container ID
+          - source_labels: ['__meta_docker_container_id']
+            target_label: 'container_id'
 
 ---
 # ── Grafana ──────────────────────────────────────────────────────
