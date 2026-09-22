@@ -444,7 +444,7 @@ export default function Home() {
                     </div>
 
                     {/* ===== DASHBOARD STATS SECTION ===== */}
-                    <div className="mb-2 flex justify-between items-center">
+                    <div className="mb-2 flex justify-between items-center flex-wrap gap-2">
                         <h5 className="font-bold uppercase text-ink-800">
                             Total Purchase Amount :
                             <span className="text-sm pl-1 font-normal text-ink-700">
@@ -452,35 +452,60 @@ export default function Home() {
                             </span>
                         </h5>
 
-                        <button
-                            type="button"
-                            onClick={refreshBtnClick}
-                            className="inline-block rounded-full border border-terracotta-300 text-terracotta-700 hover:bg-terracotta-50 px-4 pt-2 pb-2 text-xs font-semibold uppercase tracking-wide leading-normal transition-colors">
-                            Refresh Stats
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const dummy = getDummyData();
+                                    setOrderStats(dummy as any);
+                                }}
+                                className="inline-block rounded-full border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 px-4 pt-2 pb-2 text-xs font-semibold uppercase tracking-wide leading-normal transition-colors">
+                                🧪 Nạp Dữ Liệu Mẫu (Demo)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={refreshBtnClick}
+                                className="inline-block rounded-full border border-terracotta-300 text-terracotta-700 hover:bg-terracotta-50 px-4 pt-2 pb-2 text-xs font-semibold uppercase tracking-wide leading-normal transition-colors">
+                                🔄 Refresh Stats
+                            </button>
+                        </div>
                     </div>
 
                     <hr className="border-terracotta-100" />
 
                     <div className="pt-3 flex justify-between flex-wrap gap-4">
-                        <div>
-                            <div className="font-bold uppercase text-ink-800">
+                        <div className="flex-1 min-w-[320px] max-w-[550px]">
+                            <div className="font-bold uppercase text-ink-800 mb-2">
                                 Brand wise revenue
                             </div>
                             <div style={{ width: "500px", maxWidth: "100%" }}>
-                                {//@ts-ignore
+                                {brandPurchaseChart.chartData.datasets && brandPurchaseChart.chartData.datasets.length > 0 ? (
+                                    //@ts-ignore
                                     <Doughnut data={brandPurchaseChart.chartData} options={brandPurchaseChart.chartOptions} />
-                                }
+                                ) : (
+                                    <div className="h-56 flex flex-col items-center justify-center border-2 border-dashed border-terracotta-200 rounded-xl text-ink-500 bg-cream-50 p-4 text-center">
+                                        <span className="text-3xl mb-2">📊</span>
+                                        <p className="text-sm font-semibold">Chưa có dữ liệu theo thương hiệu</p>
+                                        <p className="text-xs text-ink-400 mt-1">Bấm "Nạp Dữ Liệu Mẫu" ở trên để xem thử biểu đồ</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        <div>
-                            <div className="font-bold uppercase text-ink-800">
+                        <div className="flex-1 min-w-[320px] max-w-[550px]">
+                            <div className="font-bold uppercase text-ink-800 mb-2">
                                 Category wise interests
                             </div>
                             <div style={{ width: "500px", maxWidth: "100%" }}>
-                                {//@ts-ignore
+                                {categoryPurchaseChart.chartData.datasets && categoryPurchaseChart.chartData.datasets.length > 0 ? (
+                                    //@ts-ignore
                                     <PolarArea data={categoryPurchaseChart.chartData} options={categoryPurchaseChart.chartOptions} />
-                                }
+                                ) : (
+                                    <div className="h-56 flex flex-col items-center justify-center border-2 border-dashed border-terracotta-200 rounded-xl text-ink-500 bg-cream-50 p-4 text-center">
+                                        <span className="text-3xl mb-2">🏷️</span>
+                                        <p className="text-sm font-semibold">Chưa có dữ liệu theo danh mục</p>
+                                        <p className="text-xs text-ink-400 mt-1">Bấm "Nạp Dữ Liệu Mẫu" ở trên để xem thử biểu đồ</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -489,37 +514,40 @@ export default function Home() {
                     <hr className="border-terracotta-100 mt-3" />
 
                     <div className="pt-3">
-                        <div className="font-bold uppercase text-ink-800">
+                        <div className="font-bold uppercase text-ink-800 mb-2">
                             Top Trending Products
                         </div>
-                        {/* <div style={{ height: "400px" }}>
-                            {//@ts-ignore
-                                <Bar data={productPurchaseChart.chartData} options={productPurchaseChart.chartOptions} />
-                            }
-                        </div> */}
-                        <div className="pt-3 flex flex-wrap justify-start">
-                            {orderStats?.products?.map((product) => (
-                                <div key={product.productId} className="block max-w-sm rounded-xl bg-white shadow-card border border-terracotta-100 m-2 overflow-hidden">
-                                    <Image
-                                        className="w-auto mx-auto"
-                                        style={{ height: '160px' }}
-                                        src={product.styleImages_default_imageURL}
-                                        alt={product.productDisplayName}
-                                        width={480}
-                                        height={640}
-                                    />
-                                    <hr className="border-terracotta-100" />
-                                    <div className="p-6 bg-cream-100">
-                                        <h5 className="mb-2 h-20 text-lg font-display font-semibold leading-tight text-ink-800">
-                                            {product.productDisplayName}
-                                        </h5>
-                                        <p className="mb-4 text-sm text-ink-600">
-                                            {getShortName(product.productDescriptors_description_value)}
-                                        </p>
+                        {orderStats?.products && orderStats.products.length > 0 ? (
+                            <div className="pt-3 flex flex-wrap justify-start">
+                                {orderStats.products.map((product) => (
+                                    <div key={product.productId} className="block max-w-sm rounded-xl bg-white shadow-card border border-terracotta-100 m-2 overflow-hidden">
+                                        <Image
+                                            className="w-auto mx-auto"
+                                            style={{ height: '160px' }}
+                                            src={product.styleImages_default_imageURL}
+                                            alt={product.productDisplayName}
+                                            width={480}
+                                            height={640}
+                                        />
+                                        <hr className="border-terracotta-100" />
+                                        <div className="p-6 bg-cream-100">
+                                            <h5 className="mb-2 h-20 text-lg font-display font-semibold leading-tight text-ink-800">
+                                                {product.productDisplayName}
+                                            </h5>
+                                            <p className="mb-4 text-sm text-ink-600">
+                                                {getShortName(product.productDescriptors_description_value)}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-8 text-center border-2 border-dashed border-terracotta-200 rounded-xl text-ink-500 bg-cream-50 mt-2">
+                                <span className="text-3xl mb-2 block">🛍️</span>
+                                <p className="text-sm font-semibold">Chưa có sản phẩm thịnh hành</p>
+                                <p className="text-xs text-ink-400 mt-1">Sản phẩm bán chạy sẽ tự động được hiển thị tại đây khi có đơn mua</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main >
