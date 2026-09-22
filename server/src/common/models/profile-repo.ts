@@ -4,6 +4,7 @@ import {
   RedisSchema,
   RedisRepository,
   RedisEntityId,
+  getRedis
 } from '../utils/redis/redis-wrapper';
 
 const PROFILE_KEY_PREFIX = 'Profile';
@@ -41,7 +42,7 @@ Redis OM uses hash to see if index needs to be recreated or not
 
 const createRedisIndex = async () => {
   const repository = getRepository();
-  await repository.createIndex();
+  // await repository.createIndex(); // Disabled for CMC Cloud Redis
 };
 
 const DEFAULT_PROFILES: IProfile[] = [
@@ -105,51 +106,13 @@ const initialize = async () => {
   await createRedisIndex();
 
   const repository = getRepository();
-  const exists = await repository
-    .search()
-    .where('persona')
-    .equals('GRANDMOTHER')
-    .return.count();
+  const existingProfiles = await getRedis().getKeys(`${PROFILE_KEY_PREFIX}:*`);
 
-  if (exists <= 0) {
-    const nodeRedisClient = getNodeRedisClient();
+  if (!existingProfiles || existingProfiles.length === 0) {
     DEFAULT_PROFILES.forEach(async (profile) => {
       await repository.save(profile);
 
-      if (profile.accessories > 0) {
-        await nodeRedisClient?.bf.add(
-          'bfprofile:accessories',
-          profile.persona.toLowerCase(),
-        );
-      }
-
-      if (profile.apparel > 0) {
-        await nodeRedisClient?.bf.add(
-          'bfprofile:apparel',
-          profile.persona.toLowerCase(),
-        );
-      }
-
-      if (profile['accessories:watches'] > 0) {
-        await nodeRedisClient?.bf.add(
-          'bfprofile:accessories:watches',
-          profile.persona.toLowerCase(),
-        );
-      }
-
-      if (profile['apparel:topwear'] > 0) {
-        await nodeRedisClient?.bf.add(
-          'bfprofile:apparel:topwear',
-          profile.persona.toLowerCase(),
-        );
-      }
-
-      if (profile['apparel:bottomwear'] > 0) {
-        await nodeRedisClient?.bf.add(
-          'bfprofile:apparel:bottomwear',
-          profile.persona.toLowerCase(),
-        );
-      }
+      // Disabled Bloom Filter logic because CMC Cloud Redis does not support RedisBloom
     });
   }
 };

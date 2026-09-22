@@ -1,4 +1,4 @@
-import type { Document } from '../mongodb/node-mongo-wrapper';
+type Document = Record<string, any>;
 
 import { CryptoCls } from '../crypto';
 import { getNodeRedisClient } from './redis-wrapper';

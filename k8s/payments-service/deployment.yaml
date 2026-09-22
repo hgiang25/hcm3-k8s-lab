@@ -15,12 +15,9 @@ spec:
       labels:
         app: payments-service
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
       containers:
         - name: payments-service
-          image: hgyang25/payments-service:latest
+          image: ${CONTAINER_REGISTRY}/payments-service:latest
           ports:
             - containerPort: 3004
           envFrom:

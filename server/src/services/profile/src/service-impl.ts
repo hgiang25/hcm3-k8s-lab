@@ -62,21 +62,8 @@ const calculateProfileScore: IMessageHandler = async (
         `Checking ${checks} categories: ${JSON.stringify(categoryKeys)}`,
       );
 
-      await Promise.all(
-        categoryKeys.map(async (category) => {
-          const exists = await nodeRedisClient.bf.exists(
-            `bfprofile:${category}`.toLowerCase(),
-            persona,
-          );
-
-          if (exists) {
-            score += 1;
-          }
-        }),
-      );
-
-      LoggerCls.info(`After ${checks} checks, total score is ${score}`);
-      score = score / (checks || 1);
+      // Disabled Bloom Filter logic because CMC Cloud Redis does not support RedisBloom
+      score = 0.5;
 
       await streamLog({
         action: TransactionStreamActions.CALCULATE_PROFILE_SCORE,

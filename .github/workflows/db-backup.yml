@@ -11,15 +11,14 @@ env:
 jobs:
   backup-mongodb:
     name: Backup MongoDB
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Install MongoDB tools
+      - name: Download MongoDB tools
         run: |
-          wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | sudo tee /etc/apt/trusted.gpg.d/server-7.0.asc
-          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-database-tools
+          wget -q https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
+          tar -zxvf mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
+          echo "${PWD}/mongodb-database-tools-ubuntu2204-x86_64-100.9.4/bin" >> $GITHUB_PATH
 
       - name: Create backup directory
         run: mkdir -p backups
@@ -30,7 +29,7 @@ jobs:
 
           # Sử dụng MONGO_IP thay cho MONGO_URL để giảm số lượng biến cần cấu hình
           mongodump \
-            --uri="mongodb://admin:rootpassword@${{ secrets.MONGO_IP }}:27017/dbFashion" \
+            --uri="mongodb://${{ secrets.MONGO_USER }}:${{ secrets.MONGO_PASSWORD }}@${{ secrets.MONGO_IP }}:27017/dbFashion?authSource=admin" \
             --gzip \
             --archive="backups/mongodb.archive.gz"
 

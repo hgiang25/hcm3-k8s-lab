@@ -48,11 +48,11 @@ jobs:
         run: |
           # Use sed to replace IP placeholders with GitHub Secrets
           sed -i "s|\${REDIS_IP}|${{ secrets.REDIS_IP }}|g" k8s/database-endpoints.yaml
-          sed -i "s|\${MONGO_IP}|${{ secrets.MONGO_IP }}|g" k8s/database-endpoints.yaml
+          sed -i "s|\${POSTGRES_IP}|${{ secrets.POSTGRES_IP }}|g" k8s/database-endpoints.yaml
           
           # Replace passwords in secrets.yaml
-          sed -i "s|\${MONGO_USER}|${{ secrets.MONGO_USER }}|g" k8s/secrets.yaml
-          sed -i "s|\${MONGO_PASSWORD}|${{ secrets.MONGO_PASSWORD }}|g" k8s/secrets.yaml
+          sed -i "s|\${POSTGRES_USER}|${{ secrets.POSTGRES_USER }}|g" k8s/secrets.yaml
+          sed -i "s|\${POSTGRES_PASSWORD}|${{ secrets.POSTGRES_PASSWORD }}|g" k8s/secrets.yaml
           sed -i "s|\${REDIS_PASSWORD}|${{ secrets.REDIS_PASSWORD }}|g" k8s/secrets.yaml
           
           # Apply the Internal DNS configuration
@@ -65,6 +65,7 @@ jobs:
           if [ -f k8s/secrets.yaml ]; then
             kubectl apply -f k8s/secrets.yaml
           fi
+
 
       - name: Replace image tags in manifests
         run: |
