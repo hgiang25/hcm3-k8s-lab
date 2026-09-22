@@ -125,8 +125,16 @@ jobs:
           echo "Installing Internal NGINX Ingress Controller..."
           kubectl apply -f k8s/ingress-internal/deploy.yaml
           
-          echo "Waiting for Ingress Controllers to be created..."
-          sleep 15
+          echo "Waiting for Ingress Controllers to be ready..."
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=120s || echo "Timeout waiting for public ingress"
+          kubectl wait --namespace ingress-nginx-internal \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=120s || echo "Timeout waiting for internal ingress"
+          sleep 10
           
           echo "Applying Public Ingress Rules..."
           kubectl apply -f k8s/ingress-public.yaml
