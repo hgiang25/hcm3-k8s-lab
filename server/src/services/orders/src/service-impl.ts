@@ -18,14 +18,13 @@ import * as OrderRepo from '../../../common/models/order-repo';
 import { TransactionStreamActions } from '../../../common/models/misc';
 import { ORDER_STATUS, DB_ROW_STATUS } from '../../../common/models/order';
 import {
-  ISessionData, REDIS_STREAMS, REDIS_KEYS
+  ISessionData, REDIS_STREAMS
 } from '../../../common/config/server-config';
 import { USERS } from '../../../common/config/constants';
 import { YupCls } from '../../../common/utils/yup';
 import { LoggerCls } from '../../../common/utils/logger';
 import { listenToStreams } from '../../../common/utils/redis/redis-streams';
 import { addMessageToStream } from '../../../common/utils/redis/redis-streams';
-import { getNodeRedisClient } from '../../../common/utils/redis/redis-wrapper';
 import { getPrismaClient } from '../../../common/utils/prisma/prisma-wrapper';
 
 const validateOrder = async (_order) => {
@@ -117,21 +116,46 @@ const addOrderToRedis = async (order: OrderWithIncludes) => {
   }
 };
 
-const addOrderToPrismaDB = async (order: OrderWithIncludes) => {
+const addOrderToPrismaDB = async (order: OrderWithIncludes, orderAmount: number) => {
   const prisma = getPrismaClient();
+
+  const orderProductData = (order.products || []).map((p) => ({
+    id: p.id || uuidv4(),
+    productId: p.productId,
+    productPrice: Math.round(Number(p.productPrice) || 0),
+    qty: Number(p.qty) || 1,
+    storeId: p.storeId || null,
+    storeName: p.storeName || null,
+    productData: p.productData || {},
+    createdBy: order.createdBy,
+    createdOn: order.createdOn || new Date(),
+    statusCode: DB_ROW_STATUS.ACTIVE,
+  }));
+
   await prisma.order.create({
     data: {
       orderId: order.orderId,
-      orderStatusCode: order.orderStatusCode,
-      potentialFraud: order.potentialFraud,
+      orderStatusCode: ORDER_STATUS.PAYMENT_SUCCESS,
+      potentialFraud: order.potentialFraud ?? false,
       userId: order.userId,
       createdBy: order.createdBy,
+      statusCode: DB_ROW_STATUS.ACTIVE,
 
       products: {
-        createMany: {
-          data: <Prisma.OrderProductCreateManyOrderInput[]>order.products
-        }
-      }
+        create: orderProductData,
+      },
+
+      Payment: {
+        create: {
+          paymentId: uuidv4(),
+          orderAmount: orderAmount,
+          paidAmount: Math.round(orderAmount),
+          orderStatusCode: ORDER_STATUS.PAYMENT_SUCCESS,
+          userId: order.userId,
+          createdBy: order.createdBy,
+          statusCode: DB_ROW_STATUS.ACTIVE,
+        },
+      },
     },
   });
 };
@@ -157,7 +181,7 @@ const createOrder = async (
     const orderId = uuidv4();
 
     order.orderId = orderId;
-    order.orderStatusCode = ORDER_STATUS.CREATED;
+    order.orderStatusCode = ORDER_STATUS.PAYMENT_SUCCESS;
     order.userId = userId;
     order.createdBy = userId;
     order.createdOn = new Date();
@@ -169,13 +193,18 @@ const createOrder = async (
     const products = await getProductDetails(order);
     addProductDataToOrders(order, products);
 
+    let orderAmount = 0;
+    order.products?.forEach((product) => {
+      orderAmount += product.productPrice * product.qty;
+    });
+
     await addOrderToRedis(order);
 
     /**
      * In real world scenario : can use RDI/ redis gears/ any other database to database sync strategy for REDIS-> MongoDB  data transfer.
      * To keep it simple, adding  data to MongoDB manually in the same service
      */
-    await addOrderToPrismaDB(order);
+    await addOrderToPrismaDB(order, orderAmount);
 
     await streamLog({
       action: 'CREATE_ORDER',
@@ -185,11 +214,6 @@ const createOrder = async (
         persona: sessionData.persona,
         sessionId: sessionId,
       },
-    });
-
-    let orderAmount = 0;
-    order.products?.forEach((product) => {
-      orderAmount += product.productPrice * product.qty;
     });
 
     const orderDetails: Partial<IOrder> = {
@@ -373,29 +397,80 @@ async function checkOrderRiskScore(message: ITransactionStreamMessage) {
   return retVal;
 }
 
+/**
+ * Order Stats — computed on-demand directly from PostgreSQL (Payment + OrderProduct tables),
+ * instead of relying on RedisGears stream triggers (statsTotalPurchaseAmount / statsProductPurchaseQtySet / ...),
+ * since RedisGears / Triggers-and-Functions module is NOT available on CMC Cloud managed Redis.
+ *
+ * Business rule preserved from the old trigger (database/src/triggers/stream-trigger.js):
+ * only orders that have a successful Payment record count towards stats
+ * (a Payment row is only ever created once payment succeeds — see payments-service/service-impl.ts).
+ */
 const getOrderStats = async () => {
-  const redisClient = getNodeRedisClient();
+  const prisma = getPrismaClient();
   let products: Product[] = [];
 
+  // 1. total purchase amount = sum of orderAmount across all successful payments
+  const totalAgg = await prisma.payment.aggregate({
+    where: { statusCode: DB_ROW_STATUS.ACTIVE },
+    _sum: { orderAmount: true },
+  });
+  const totalPurchaseAmount = totalAgg._sum.orderAmount ?? 0;
 
-  const totalPurchaseAmount = await redisClient.get(REDIS_KEYS.STATS.TOTAL_PURCHASE_AMOUNT);
+  // 2. all order line items belonging to orders that have a successful payment
+  const paidOrderProducts = await prisma.orderProduct.findMany({
+    where: {
+      Order: {
+        Payment: { statusCode: DB_ROW_STATUS.ACTIVE },
+      },
+    },
+    select: {
+      productId: true,
+      qty: true,
+      productPrice: true,
+      productData: true,
+    },
+  });
 
-  const productPurchaseQtySet = await redisClient.zRangeWithScores(REDIS_KEYS.STATS.PRODUCT_PURCHASE_QTY_SET, "0", "-1");
-  const categoryPurchaseAmountSet = await redisClient.zRangeWithScores(REDIS_KEYS.STATS.CATEGORY_PURCHASE_AMOUNT_SET, "0", "-1");
-  const brandPurchaseAmountSet = await redisClient.zRangeWithScores(REDIS_KEYS.STATS.BRAND_PURCHASE_AMOUNT_SET, "0", "-1");
+  const productQtyMap = new Map<string, number>();
+  const categoryAmountMap = new Map<string, number>();
+  const brandAmountMap = new Map<string, number>();
 
-  productPurchaseQtySet.reverse();
-  categoryPurchaseAmountSet.reverse();
-  brandPurchaseAmountSet.reverse();
+  for (const item of paidOrderProducts) {
+    const qty = Number(item.qty) || 0;
+    const amount = qty * (Number(item.productPrice) || 0);
+    const productData: any = item.productData || {};
 
-  if (productPurchaseQtySet && productPurchaseQtySet.length) {
+    productQtyMap.set(item.productId, (productQtyMap.get(item.productId) || 0) + qty);
+
+    const category = `${productData.masterCategory_typeName || ''}:${productData.subCategory_typeName || ''}`.toLowerCase();
+    if (category !== ':') {
+      categoryAmountMap.set(category, (categoryAmountMap.get(category) || 0) + amount);
+    }
+
+    const brand = productData.brandName;
+    if (brand) {
+      brandAmountMap.set(brand, (brandAmountMap.get(brand) || 0) + amount);
+    }
+  }
+
+  // shape matches the old redis zRangeWithScores(...).reverse() output: [{ value, score }], sorted desc by score
+  const toSortedScoreSet = (map: Map<string, number>) =>
+    Array.from(map.entries())
+      .map(([value, score]) => ({ value, score }))
+      .sort((a, b) => b.score - a.score);
+
+  const productPurchaseQtySet = toSortedScoreSet(productQtyMap);
+  const categoryPurchaseAmountSet = toSortedScoreSet(categoryAmountMap);
+  const brandPurchaseAmountSet = toSortedScoreSet(brandAmountMap);
+
+  if (productPurchaseQtySet.length) {
     const productIdArr = productPurchaseQtySet.map(itm => itm.value);
     products = await getProductByIds(productIdArr);
 
     products.sort((a, b) => {
       return productIdArr.indexOf(a.productId) - productIdArr.indexOf(b.productId);
     });
-
   }
 
   const retValue = {

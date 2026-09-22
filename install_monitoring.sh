@@ -24,19 +24,13 @@ helm upgrade --install loki grafana/loki-stack \
   --set "loki.tolerations[0].key=dedicated,loki.tolerations[0].operator=Equal,loki.tolerations[0].value=monitoring,loki.tolerations[0].effect=NoSchedule" \
   --set "promtail.tolerations[0].key=dedicated,promtail.tolerations[0].operator=Equal,promtail.tolerations[0].value=monitoring,promtail.tolerations[0].effect=NoSchedule"
 
-# 2. Cài đặt Jaeger (Bản V1 - Chart 3.3.3 ổn định nhất)
-echo "Cài đặt Jaeger..."
-helm upgrade --install jaeger jaegertracing/jaeger \
+# 2. Cài đặt Grafana Tempo (S3-Backed)
+echo "Cài đặt Tempo..."
+helm upgrade --install tempo grafana/tempo \
   --namespace monitoring \
-  --version 3.3.3 \
-  --set provisionDataStore.cassandra=false \
-  --set allInOne.enabled=true \
-  --set agent.enabled=false \
-  --set collector.enabled=false \
-  --set query.enabled=false \
-  --set storage.type=memory \
-  --set allInOne.nodeSelector.role=monitoring \
-  --set "allInOne.tolerations[0].key=dedicated,allInOne.tolerations[0].operator=Equal,allInOne.tolerations[0].value=monitoring,allInOne.tolerations[0].effect=NoSchedule"
+  --set tempo.nodeSelector.role=monitoring \
+  --set "tempo.tolerations[0].key=dedicated,tempo.tolerations[0].operator=Equal,tempo.tolerations[0].value=monitoring,tempo.tolerations[0].effect=NoSchedule" \
+  -f tempo-s3-values.yaml
 
 # 3. Cài đặt Grafana
 echo "Cài đặt Grafana..."

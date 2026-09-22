@@ -21,7 +21,6 @@ on:
           - digital-identity-service
           - profile-service
           - client
-          - logging
 
 env:
   K8S_NAMESPACE: ecommerce
@@ -117,26 +116,39 @@ jobs:
         if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'client' }}
         run: kubectl apply -f k8s/client/
 
-      - name: Deploy Logging Stack
-        if: ${{ github.event.inputs.deploy_target == 'all' || github.event.inputs.deploy_target == 'logging' }}
-        run: kubectl apply -f k8s/logging/
-
-      - name: Deploy Ingress and Public ELB
+      - name: Deploy Ingress Controllers and Rules
         if: ${{ github.event.inputs.deploy_target == 'all' }}
         run: |
-          echo "Installing NGINX Ingress Controller..."
+          echo "Installing Public NGINX Ingress Controller..."
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.5/deploy/static/provider/cloud/deploy.yaml
-          
+
+          echo "Installing Internal NGINX Ingress Controller..."
+          kubectl apply -f k8s/ingress-internal/deploy.yaml
+
           echo "Waiting for NGINX Ingress Controller service to be created..."
           sleep 15
 
           echo "Patching NGINX Ingress Controller pod anti-affinity..."
           kubectl patch deployment ingress-nginx-controller -n ingress-nginx \
             --patch-file k8s/ingress-nginx-deployment-patch.yaml
-          
-          echo "Applying Ingress Rules..."
-          kubectl apply -f k8s/ingress.yaml
-          
+
+          echo "Waiting for Ingress Controllers to be ready..."
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=120s || echo "Timeout waiting for public ingress"
+          kubectl wait --namespace ingress-nginx-internal \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=120s || echo "Timeout waiting for internal ingress"
+          sleep 10
+
+          echo "Applying Public Ingress Rules..."
+          kubectl apply -f k8s/ingress-public.yaml
+
+          echo "Applying Private Ingress Rules..."
+          kubectl apply -f k8s/ingress-private.yaml
+
           echo "Patching Nginx Ingress Controller to create CMC Public ELB..."
           kubectl patch svc ingress-nginx-controller -n ingress-nginx --patch-file k8s/ingress-nginx-svc-patch.yaml || echo "Nginx Ingress Controller not found or named differently, skipping ELB patch."
 
@@ -148,8 +160,6 @@ jobs:
           kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/orders-service --timeout=300s
           kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/products-service --timeout=300s
           kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/client --timeout=300s
-          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/loki --timeout=300s
-          kubectl -n ${{ env.K8S_NAMESPACE }} rollout status deployment/grafana --timeout=300s
           echo "All deployments are ready!"
 
       - name: Show deployment status

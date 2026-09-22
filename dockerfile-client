@@ -25,4 +25,4 @@ COPY $BUILD_BASE_PATH/ .
 
 RUN npm run build
 
-CMD npm start -- -p $FRONTEND_CLIENT_PORT
+CMD ["sh", "-c", "npm start -- -p ${FRONTEND_CLIENT_PORT}"]

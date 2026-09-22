@@ -1,0 +1,41 @@
+# 1. INGRESS CHO APPLICATION (Namespace: ecommerce)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ecommerce-ingress
+  namespace: ecommerce
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: '10m'
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: redis-shopping.ntdevopsmlflow.io.vn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: client
+                port:
+                  number: 4200
+    - host: api-redis-shopping.ntdevopsmlflow.io.vn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 3000
+    - host: cdn.ntdevopsmlflow.io.vn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cdn
+                port:
+                  number: 8080
