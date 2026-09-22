@@ -34,8 +34,17 @@ const processPayment: IMessageHandler = async (
     const orderAmount = parseFloat(orderDetails.orderAmount ?? '0');
 
     const prisma = getPrismaClient();
-    const retPayObj: Payment = await prisma.payment.create({
-      data: {
+    const retPayObj: Payment = await prisma.payment.upsert({
+      where: {
+        orderId: orderDetails.orderId,
+      },
+      update: {
+        orderAmount: orderAmount,
+        paidAmount: orderAmount,
+        orderStatusCode: paymentStatus,
+        statusCode: DB_ROW_STATUS.ACTIVE,
+      },
+      create: {
         orderId: orderDetails.orderId,
         orderAmount: orderAmount,
         paidAmount: orderAmount,
