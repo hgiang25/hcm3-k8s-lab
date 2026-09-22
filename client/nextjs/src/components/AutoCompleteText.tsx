@@ -62,14 +62,14 @@ const AutoCompleteText = ({ listItems, suggestionSelectedCallback, placeHolder }
             return null;
         }
         return (
-            <ul className="absolute z-10  mt-2 bg-white border rounded shadow-lg max-h-48 overflow-y-auto w-full">
+            <ul className="absolute z-10 mt-2 bg-white border border-terracotta-100 rounded-lg shadow-card max-h-48 overflow-y-auto w-full">
                 {suggestions.map((item, index) => {
                     return (
                         <li
                             // onMouseDown will trigger before textbox onBlur
                             onMouseDown={() => suggestionSelected(item)}
                             key={item.id}
-                            className={`cursor-pointer px-3 py-2 ${index % 2 === 0 ? 'bg-gray-100' : 'bg-white'} hover:bg-blue-200`}
+                            className={`cursor-pointer px-3 py-2 ${index % 2 === 0 ? 'bg-cream-100' : 'bg-white'} hover:bg-terracotta-100 text-ink-800`}
                         >
                             {item.text}
                         </li>
@@ -89,7 +89,7 @@ const AutoCompleteText = ({ listItems, suggestionSelectedCallback, placeHolder }
                 type="text"
                 placeholder={placeHolder}
                 className={
-                    `w-full pl-3 pr-10 py-1 border rounded-full  focus:outline-none 
+                    `w-full pl-3 pr-10 py-1.5 border border-terracotta-100 bg-white text-ink-800 rounded-full focus:outline-none focus:border-terracotta-300
                     ${!isValidInput ? 'border-red-500 ' : ''}`
                 }
             />

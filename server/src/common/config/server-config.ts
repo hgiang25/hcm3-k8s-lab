@@ -2,6 +2,7 @@ interface IApiResponseBody {
   data: unknown;
   error: unknown;
   isFromCache?: boolean;
+  totalCount?: number;
 }
 
 export interface ISessionData {
@@ -105,6 +106,7 @@ const SERVER_CONFIG = {
       OPEN_AI: "OpenAI",
       HUGGING_FACE: "HuggingFace",
     },
+    DEFAULT_PAGE_SIZE: 24,
     API: {
       PREFIX: '/products',
       GET_PRODUCTS_BY_FILTER: '/getProductsByFilter',

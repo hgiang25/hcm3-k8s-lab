@@ -53,34 +53,38 @@ export default function Home() {
                 searchData = getObjectFromWindowQueryParams();
             }
             setShowLoader(true);
+            try {
+                let productDisplayName = "";
+                let semanticProductSearchText = "";
+                if (CLIENT_CONFIG.SEARCH_TYPE.VALUE == SEARCH_TYPES.GEO_LOCATION.VALUE) {
+                    productDisplayName = searchData?.productDisplayName || "";
+                }
+                else if (CLIENT_CONFIG.SEARCH_TYPE.VALUE == SEARCH_TYPES.GEO_LOCATION_SEMANTIC.VALUE) {
+                    semanticProductSearchText = searchData?.productDisplayName || "";
+                }
 
-            let productDisplayName = "";
-            let semanticProductSearchText = "";
-            if (CLIENT_CONFIG.SEARCH_TYPE.VALUE == SEARCH_TYPES.GEO_LOCATION.VALUE) {
-                productDisplayName = searchData?.productDisplayName || "";
+                const productsData = await getStoreProductsByGeoFilter(zipCodeInfo, productDisplayName, searchData?.productId, semanticProductSearchText)
+                setProducts([...productsData]);
+
+                setObjectToWindowQueryParams(searchData);
+
+                setNearestStore("");
+                if (productsData?.length) {
+                    setNearestStore(productsData[0].storeId);
+                }
+
+                let labelObj = { zipCode: zipCodeInfo?.zipCode };
+                let searchFilter = convertObjectToLabel({ ...labelObj, ...searchData }) || "";
+                if (searchFilter) {
+                    searchFilter = " with search : (" + searchFilter + ")";
+                }
+                setFilterLabel(searchFilter);
+            } catch (error) {
+                console.error("Failed to load products:", error);
+                setProducts([]);
+            } finally {
+                setShowLoader(false);
             }
-            else if (CLIENT_CONFIG.SEARCH_TYPE.VALUE == SEARCH_TYPES.GEO_LOCATION_SEMANTIC.VALUE) {
-                semanticProductSearchText = searchData?.productDisplayName || "";
-            }
-
-            const productsData = await getStoreProductsByGeoFilter(zipCodeInfo, productDisplayName, searchData?.productId, semanticProductSearchText)
-            setProducts([...productsData]);
-
-            setObjectToWindowQueryParams(searchData);
-
-            setNearestStore("");
-            if (productsData?.length) {
-                setNearestStore(productsData[0].storeId);
-            }
-
-            let labelObj = { zipCode: zipCodeInfo?.zipCode };
-            let searchFilter = convertObjectToLabel({ ...labelObj, ...searchData }) || "";
-            if (searchFilter) {
-                searchFilter = " with search : (" + searchFilter + ")";
-            }
-            setFilterLabel(searchFilter);
-
-            setShowLoader(false);
         }
     }
 
@@ -180,24 +184,24 @@ export default function Home() {
                 <Chat chatMessageCallback={chatMessageCallback} oldChatHistory={oldChatHistory} />
             }
 
-            <main className="pt-12">
-                <div className="max-w-screen-xl mx-auto mt-6 px-6 pb-6">
-                    <div className="mb-2 flex justify-between">
-                        <span>Showing {products?.length} products in nearest stores {filterLabel}</span>
+            <main className="pt-14">
+                <div className="max-w-screen-xl mx-auto mt-6 px-6 pb-10">
+                    <div className="mb-4 flex justify-between items-center">
+                        <span className="text-sm text-ink-600">Showing <span className="font-semibold text-ink-800">{products?.length}</span> products in nearest stores{filterLabel}</span>
 
                         {CLIENT_CONFIG.TRIGGERS_FUNCTIONS.VALUE &&
 
                             <button
                                 type="button"
                                 onClick={resetStockQtyBtnClick}
-                                className="inline-block rounded bg-slate-300 hover:bg-slate-400 px-4 pt-2 pb-2 text-xs font-semibold uppercase leading-normal text-black">
+                                className="inline-block rounded-full border border-terracotta-300 text-terracotta-700 hover:bg-terracotta-50 px-4 pt-2 pb-2 text-xs font-semibold uppercase tracking-wide leading-normal transition-colors">
                                 Reset Stock QTY
                             </button>
                         }
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5">
                         {products?.map((product) => {
-                            const cardColorCss = (product.storeId != nearestStore) ? 'bg-orange-100' : '';
+                            const cardColorCss = (product.storeId != nearestStore) ? 'bg-terracotta-50' : '';
                             return (
                                 <ProductCard key={product.productId} product={product} cardColorCss={cardColorCss} />
                             )

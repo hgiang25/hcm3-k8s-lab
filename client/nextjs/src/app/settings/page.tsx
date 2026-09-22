@@ -50,14 +50,14 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="flex justify-center">
-            <div className="max-w-full rounded bg-slate-100 shadow-lg border border-neutral-200 mt-4 overflow-y-auto">
-                <div className="flex-grow flex p-2 justify-center bg-slate-600">
-                    <h1 className="text-xl font-semibold text-white">Settings</h1>
+        <div className="flex justify-center pt-8 px-4 min-h-screen bg-cream-50">
+            <div className="max-w-2xl w-full rounded-xl bg-white shadow-card border border-terracotta-100 mt-4 overflow-y-auto">
+                <div className="flex-grow flex p-3 justify-center bg-terracotta-500 rounded-t-xl">
+                    <h1 className="text-xl font-display font-semibold text-white">Settings</h1>
                 </div>
                 <div className="flex-grow flex flex-col p-4">
                     <div className="flex-grow flex">
-                        <h3 className="text-lg font-bold text-neutral-600">Search Type</h3>
+                        <h3 className="text-lg font-bold text-ink-700">Search Type</h3>
                     </div>
                     <div className="flex-grow p-2">
                         <div className="flex flex-row justify-between">
@@ -68,7 +68,7 @@ export default function SettingsPage() {
                                     checked={searchType == SEARCH_TYPES.NORMAL.VALUE}
                                     onChange={handleSearchTypeChange} />
 
-                                <label htmlFor="normal" className="ml-1">{SEARCH_TYPES.NORMAL.LABEL}</label>
+                                <label htmlFor="normal" className="ml-1 text-ink-700">{SEARCH_TYPES.NORMAL.LABEL}</label>
                             </div>
 
                             <div className="flex flex-row ml-4">
@@ -77,9 +77,9 @@ export default function SettingsPage() {
                                     checked={searchType == SEARCH_TYPES.VSS_TEXT.VALUE}
                                     onChange={handleSearchTypeChange} />
 
-                                <label htmlFor="vssText" className="ml-1">{SEARCH_TYPES.VSS_TEXT.LABEL}</label>
+                                <label htmlFor="vssText" className="ml-1 text-ink-700">{SEARCH_TYPES.VSS_TEXT.LABEL}</label>
                                 <a href={SEARCH_TYPES.VSS_TEXT.TUTORIAL} className="ml-1" target="_blank" rel="noreferrer">
-                                    <i className="fas fa-arrow-up-right-from-square text-blue-600 ml-2"></i>
+                                    <i className="fas fa-arrow-up-right-from-square text-terracotta-500 ml-2"></i>
                                 </a>
                             </div>
                             <div className="flex flex-row ml-4">
@@ -88,9 +88,9 @@ export default function SettingsPage() {
                                     checked={searchType == SEARCH_TYPES.VSS_IMAGE_SUMMARY.VALUE}
                                     onChange={handleSearchTypeChange} />
 
-                                <label htmlFor="vssImageSummary" className="ml-1">{SEARCH_TYPES.VSS_IMAGE_SUMMARY.LABEL}</label>
+                                <label htmlFor="vssImageSummary" className="ml-1 text-ink-700">{SEARCH_TYPES.VSS_IMAGE_SUMMARY.LABEL}</label>
                                 <a href={SEARCH_TYPES.VSS_IMAGE_SUMMARY.TUTORIAL} className="ml-1" target="_blank" rel="noreferrer">
-                                    <i className="fas fa-arrow-up-right-from-square text-blue-600 ml-2"></i>
+                                    <i className="fas fa-arrow-up-right-from-square text-terracotta-500 ml-2"></i>
                                 </a>
 
                             </div>
@@ -103,10 +103,10 @@ export default function SettingsPage() {
                                     checked={searchType == SEARCH_TYPES.GEO_LOCATION.VALUE}
                                     onChange={handleSearchTypeChange} />
 
-                                <label htmlFor="geoLocation" className="ml-1">{SEARCH_TYPES.GEO_LOCATION.LABEL}</label>
+                                <label htmlFor="geoLocation" className="ml-1 text-ink-700">{SEARCH_TYPES.GEO_LOCATION.LABEL}</label>
 
                                 <a href={SEARCH_TYPES.GEO_LOCATION.TUTORIAL} className="ml-1" target="_blank" rel="noreferrer">
-                                    <i className="fas fa-arrow-up-right-from-square text-blue-600 ml-2"></i>
+                                    <i className="fas fa-arrow-up-right-from-square text-terracotta-500 ml-2"></i>
                                 </a>
                             </div>
 
@@ -116,14 +116,14 @@ export default function SettingsPage() {
                                     checked={searchType == SEARCH_TYPES.GEO_LOCATION_SEMANTIC.VALUE}
                                     onChange={handleSearchTypeChange} />
 
-                                <label htmlFor="geoLocationSemantic" className="ml-1">{SEARCH_TYPES.GEO_LOCATION_SEMANTIC.LABEL}</label>
+                                <label htmlFor="geoLocationSemantic" className="ml-1 text-ink-700">{SEARCH_TYPES.GEO_LOCATION_SEMANTIC.LABEL}</label>
                             </div>
                         </div>
                     </div>
                     {searchType === SEARCH_TYPES.VSS_TEXT.VALUE &&
                         <>
                             <div className="flex-grow flex pt-2">
-                                <h3 className="text-lg font-bold text-neutral-600">Semantic Text Search</h3>
+                                <h3 className="text-lg font-bold text-ink-700">Semantic Text Search</h3>
                             </div>
                             <div className="flex-grow flex p-2">
                                 <div className="flex flex-row">
@@ -132,7 +132,7 @@ export default function SettingsPage() {
                                         checked={embeddingsType == VSS_EMBEDDINGS.OPEN_AI}
                                         onChange={handleEmbeddingsTypeChange} />
 
-                                    <label htmlFor="openAi" className="ml-1">{VSS_EMBEDDINGS.OPEN_AI}</label>
+                                    <label htmlFor="openAi" className="ml-1 text-ink-700">{VSS_EMBEDDINGS.OPEN_AI}</label>
                                 </div>
                                 <div className="flex flex-row ml-4">
                                     <input type="radio" id="huggingFace" name="vssEmbeddings"
@@ -140,12 +140,12 @@ export default function SettingsPage() {
                                         checked={embeddingsType == VSS_EMBEDDINGS.HUGGING_FACE}
                                         onChange={handleEmbeddingsTypeChange} />
 
-                                    <label htmlFor="huggingFace" className="ml-1">{VSS_EMBEDDINGS.HUGGING_FACE}</label>
+                                    <label htmlFor="huggingFace" className="ml-1 text-ink-700">{VSS_EMBEDDINGS.HUGGING_FACE}</label>
                                 </div>
                             </div>
                         </>
                     }
-                    <div className="text-neutral-500 pb-2 ml-2">
+                    <div className="text-ink-600 pb-2 ml-2">
                         Note :
                         <ul>
                             {searchType === SEARCH_TYPES.VSS_TEXT.VALUE &&
@@ -157,7 +157,7 @@ export default function SettingsPage() {
 
                     </div>
                     <div className="flex-grow flex pt-2">
-                        <h3 className="text-lg font-bold text-neutral-600">AI Chat Bot</h3>
+                        <h3 className="text-lg font-bold text-ink-700">AI Chat Bot</h3>
                     </div>
                     <div className="flex-grow flex p-2">
                         <div className="flex flex-col">
@@ -166,17 +166,17 @@ export default function SettingsPage() {
                                     checked={aiChatBot}
                                     onChange={handleAiChatBotChange} />
 
-                                <label htmlFor="aiChatBot" className="ml-1">{CLIENT_CONFIG.AI_CHAT_BOT.LABEL} </label>
+                                <label htmlFor="aiChatBot" className="ml-1 text-ink-700">{CLIENT_CONFIG.AI_CHAT_BOT.LABEL} </label>
 
                                 <a href={CLIENT_CONFIG.AI_CHAT_BOT.TUTORIAL} className="ml-1" target="_blank" rel="noreferrer">
-                                    <i className="fas fa-arrow-up-right-from-square text-blue-600 ml-2"></i>
+                                    <i className="fas fa-arrow-up-right-from-square text-terracotta-500 ml-2"></i>
                                 </a>
 
                             </div>
                         </div>
                     </div>
                     <div className="flex-grow flex pt-2">
-                        <h3 className="text-lg font-bold text-neutral-600">Admin Screen</h3>
+                        <h3 className="text-lg font-bold text-ink-700">Admin Screen</h3>
                     </div>
                     <div className="flex-grow flex p-2">
                         <div className="flex flex-col">
@@ -185,12 +185,12 @@ export default function SettingsPage() {
                                     checked={adminScreen}
                                     onChange={handleAdminScreenChange} />
 
-                                <label htmlFor="adminScreen" className="ml-1">{CLIENT_CONFIG.ADMIN_SCREEN.LABEL}</label>
+                                <label htmlFor="adminScreen" className="ml-1 text-ink-700">{CLIENT_CONFIG.ADMIN_SCREEN.LABEL}</label>
                             </div>
                         </div>
                     </div>
                     <div className="flex-grow flex pt-2">
-                        <h3 className="text-lg font-bold text-neutral-600">Triggers and Functions</h3>
+                        <h3 className="text-lg font-bold text-ink-700">Triggers and Functions</h3>
                     </div>
                     <div className="flex-grow flex p-2">
                         <div className="flex flex-col">
@@ -199,20 +199,20 @@ export default function SettingsPage() {
                                     checked={triggersFunctions}
                                     onChange={handleTriggersFunctionsChange} />
 
-                                <label htmlFor="triggersFunctions" className="ml-1">{CLIENT_CONFIG.TRIGGERS_FUNCTIONS.LABEL}</label>
+                                <label htmlFor="triggersFunctions" className="ml-1 text-ink-700">{CLIENT_CONFIG.TRIGGERS_FUNCTIONS.LABEL}</label>
 
                                 <a href={CLIENT_CONFIG.TRIGGERS_FUNCTIONS.TUTORIAL} className="ml-1" target="_blank" rel="noreferrer">
-                                    <i className="fas fa-arrow-up-right-from-square text-blue-600 ml-2"></i>
+                                    <i className="fas fa-arrow-up-right-from-square text-terracotta-500 ml-2"></i>
                                 </a>
 
                             </div>
                         </div>
                     </div>
-                    <div className="flex-grow flex pt-2 justify-end">
+                    <div className="flex-grow flex pt-2 pb-1 justify-end">
                         <button
                             type="button"
                             onClick={onApplySettings}
-                            className="inline-block rounded bg-orange-300 hover:bg-orange-400 px-6 pt-2.5 pb-2 text-xs font-semibold uppercase leading-normal text-black">
+                            className="inline-block rounded-full bg-terracotta-500 hover:bg-terracotta-600 px-6 pt-2.5 pb-2 text-xs font-semibold uppercase tracking-wide leading-normal text-white transition-colors">
                             APPLY SETTINGS
                         </button>
                     </div>

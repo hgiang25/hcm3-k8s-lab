@@ -38,36 +38,36 @@ export default function Navbar({ path = '', refreshProducts, autoCompleteText, s
   const isAdmin = /admin/.test(path);
   const isLogin = /login/.test(path);
   const linkClass =
-    'flex flex-initial items-center h-full pt-1 px-4 border-b-4 hover:text-neutral-200 font-bold';
+    'flex flex-initial items-center h-full pt-1 px-4 border-b-4 hover:text-terracotta-600 font-semibold transition-colors';
   const ordersClass = clsx(linkClass, {
     'border-transparent': !isOrders,
-    'border-orange-300': isOrders,
+    'border-terracotta-500 text-terracotta-600': isOrders,
   });
   const adminClass = clsx(linkClass, {
     'border-transparent': !isAdmin,
-    'border-orange-300': isAdmin,
+    'border-terracotta-500 text-terracotta-600': isAdmin,
   });
   const loginClass = clsx(linkClass, {
     'border-transparent': !isLogin,
-    'border-orange-300': isLogin,
+    'border-terracotta-500 text-terracotta-600': isLogin,
   });
 
   return (
-    <nav className="fixed w-full px-5 flex justify-between items-center h-14 bg-slate-600 drop-shadow-md">
+    <nav className="fixed w-full px-5 flex justify-between items-center h-14 bg-cream-50/95 backdrop-blur border-b border-terracotta-100 shadow-sm z-20">
       <div>
         <Link
           prefetch={false}
           href="/"
-          className="text-white text-2xl font-semibold italic">
+          className="font-display text-ink-800 text-xl font-bold tracking-wide">
           Redis Shopping
         </Link>
       </div>
 
       <div
         id="main-nav"
-        className="bg-gray-700 flex space-y-0 relative top-0 right-0 p-0 flex-row h-full flex-grow items-center ml-10 bg-inherit">
+        className="flex space-y-0 relative top-0 right-0 p-0 flex-row h-full flex-grow items-center ml-10">
 
-        <div className="order-first flex flex-row items-center h-full text-white space-y-0 space-x-3">
+        <div className="order-first flex flex-row items-center h-full text-ink-700 space-y-0 space-x-3">
           <Link prefetch={false} className={ordersClass} href="/orders">
             Orders
           </Link>
@@ -94,19 +94,19 @@ export default function Navbar({ path = '', refreshProducts, autoCompleteText, s
             <Search refreshProducts={refreshProducts} searchPlaceHolder={searchPlaceHolder} />
           }
         </div>
-        
-        <div className='flex items-center text-white space-x-4'>
+
+        <div className='flex items-center text-ink-700 space-x-4'>
           {userRole ? (
-            <button onClick={handleLogout} className="hover:text-gray-300">
+            <button onClick={handleLogout} className="hover:text-terracotta-600 transition-colors">
               Logout
             </button>
           ) : (
-            <Link href="/login" className="hover:text-gray-300">
+            <Link href="/login" className="hover:text-terracotta-600 transition-colors">
               Login
             </Link>
           )}
           <Link prefetch={false} href="/settings">
-            <i className="fa fa-cog text-white text-2xl"></i>
+            <i className="fa fa-cog text-ink-700 hover:text-terracotta-600 text-xl transition-colors"></i>
           </Link>
         </div>
       </div>

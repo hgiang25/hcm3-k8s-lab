@@ -84,14 +84,14 @@ const Chat = ({ placeHolder, chatMessageCallback, oldChatHistory }: IChatProps) 
     }, [oldChatHistory]);
 
     return (
-        <div className="fixed bottom-20 right-4">
-            <button className="bg-orange-300 text-white rounded-full p-2 w-12 h-12" onClick={toggleChat}>
+        <div className="fixed bottom-20 right-4 z-30">
+            <button className="bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-full p-2 w-12 h-12 shadow-lg transition-colors" onClick={toggleChat}>
                 <i className="fas fa-comments"></i>
             </button>
             {isOpen && (
-                <div className="fixed inset-0 flex items-start justify-end bg-black bg-opacity-50">
-                    <div className="bg-white w-2/6 h-full rounded-lg p-4 m-2 relative">
-                        <button className="absolute top-1 right-1 bg-orange-400 text-white rounded-lg p-2" onClick={toggleChat}>
+                <div className="fixed inset-0 flex items-start justify-end bg-ink-900 bg-opacity-50 z-40">
+                    <div className="bg-cream-50 w-2/6 h-full rounded-lg p-4 m-2 relative shadow-card">
+                        <button className="absolute top-1 right-1 bg-terracotta-600 hover:bg-terracotta-700 text-white rounded-lg p-2 transition-colors" onClick={toggleChat}>
                             <i className="fas fa-times"></i>
                         </button>
                         <div className="flex flex-col h-full">
@@ -103,20 +103,20 @@ const Chat = ({ placeHolder, chatMessageCallback, oldChatHistory }: IChatProps) 
                                     >
                                         <div className="flex items-start">
                                             {chat.sender === CHAT_CONSTANTS.SENDER_USER ? (
-                                                <div className="text-base text-white bg-gray-600 rounded-full p-2 mr-2">
+                                                <div className="text-base text-white bg-ink-600 rounded-full p-2 mr-2">
                                                     <i className="fas fa-user"></i>
                                                 </div>
                                             ) : (
-                                                <div className="text-base text-white bg-blue-500 rounded-full p-2 mr-2">
+                                                <div className="text-base text-white bg-terracotta-500 rounded-full p-2 mr-2">
                                                     <i className="fas fa-robot"></i>
                                                 </div>
                                             )}
                                             <div>
-                                                <h4 className="text-sm font-bold text-gray-700">
+                                                <h4 className="text-sm font-bold text-ink-700">
                                                     {chat.sender === CHAT_CONSTANTS.SENDER_USER ? 'You' : 'Assistant'}
                                                 </h4>
 
-                                                <div className="rounded-lg p-2 text-sm">
+                                                <div className="rounded-lg p-2 text-sm text-ink-800">
                                                     <div dangerouslySetInnerHTML={createMarkup(chat.message)}></div>
                                                 </div>
                                             </div>
@@ -126,15 +126,15 @@ const Chat = ({ placeHolder, chatMessageCallback, oldChatHistory }: IChatProps) 
                             </div>
                             {isLoading && (
                                 <div className="flex items-center">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-orange-300 mr-2"></div>
-                                    <p className="text-gray-900">Generating your response, hold on...</p>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-terracotta-400 mr-2"></div>
+                                    <p className="text-ink-800">Generating your response, hold on...</p>
                                 </div>
                             )}
 
                             <div className='flex mt-2'>
                                 <input
                                     type="text"
-                                    className="flex-grow border border-gray-300 rounded-l-lg p-2 outline-none focus:border-orange-400"
+                                    className="flex-grow border border-terracotta-200 bg-white rounded-l-lg p-2 outline-none focus:border-terracotta-400 text-ink-800"
                                     placeholder={!isLoading ?
                                         (placeHolder ? placeHolder : 'Ask your question...')
                                         : ''}
@@ -148,7 +148,7 @@ const Chat = ({ placeHolder, chatMessageCallback, oldChatHistory }: IChatProps) 
                                     disabled={isLoading}
                                 />
                                 <button
-                                    className="bg-orange-400 text-white rounded-r-lg p-2"
+                                    className="bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-r-lg p-2 transition-colors"
                                     onClick={handleSend} disabled={isLoading}
                                 >
                                     <i className="fas fa-paper-plane"></i>

@@ -40,33 +40,47 @@ export default function Cart({ refreshProducts, setAlertNotification }: CartProp
       setAlertNotification({ title: '', message: '' });
     }
 
-    const order = await createOrder(
-      cart.map((item) => {
-        return {
-          productId: item.product.productId,
-          qty: item.quantity,
-          productPrice: item.product.price,
-          storeId: item.product.storeId || ""
-        };
-      }),
-    );
+    try {
+      const order = await createOrder(
+        cart.map((item) => {
+          return {
+            productId: item.product.productId,
+            qty: item.quantity,
+            productPrice: item.product.price,
+            storeId: item.product.storeId || ""
+          };
+        }),
+      );
 
-    cartDispatch({
-      type: 'clear_cart',
-    });
+      if (order?.error) {
+        throw new Error(String(order.error));
+      }
 
-    toggleOpen();
-
-    if (setAlertNotification) {
-      setAlertNotification({
-        title: `Order #${order.data}`,
-        message:
-          'Order placed, click on the "Orders" tab to see your order status!',
+      cartDispatch({
+        type: 'clear_cart',
       });
-    }
 
-    if (refreshProducts) {
-      refreshProducts();
+      toggleOpen();
+
+      if (setAlertNotification) {
+        setAlertNotification({
+          title: `Order #${order.data}`,
+          message:
+            'Order placed, click on the "Orders" tab to see your order status!',
+        });
+      }
+
+      if (refreshProducts) {
+        refreshProducts();
+      }
+    } catch (err: unknown) {
+      if (setAlertNotification) {
+        const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+        setAlertNotification({
+          title: 'Order Failed',
+          message,
+        });
+      }
     }
   }
 
@@ -74,9 +88,9 @@ export default function Cart({ refreshProducts, setAlertNotification }: CartProp
     <>
       <div
         onClick={toggleOpen}
-        className="fas fa-shopping-cart flex justify-center items-center w-12 h-12 rounded-full cursor-pointer fixed bottom-5 right-5 text-2xl bg-orange-300"
+        className="fas fa-shopping-cart flex justify-center items-center w-12 h-12 rounded-full cursor-pointer fixed bottom-5 right-5 text-xl bg-terracotta-500 text-white shadow-lg hover:bg-terracotta-600 transition-colors z-30"
         style={{ display: 'flex' }}>
-        <span className="flex justify-center items-center w-6 h-6 rounded-full bg-white border-orange-300 border-2 text-xs absolute -top-2 -right-2">
+        <span className="flex justify-center items-center w-6 h-6 rounded-full bg-white text-terracotta-600 border-terracotta-500 border-2 text-xs absolute -top-2 -right-2">
           {cart.reduce((sum, item) => sum + item.quantity, 0)}
         </span>
       </div>
@@ -88,14 +102,14 @@ export default function Cart({ refreshProducts, setAlertNotification }: CartProp
               toggleOpen();
             }
           }}
-          className="flex flex-col fixed top-0 bottom-0 left-0 right-0 bg-neutral-800 bg-opacity-60">
-          <div className="flex flex-col self-end flex-grow w-full md:w-1/3 bg-white">
-            <div className="flex justify-between items-center p-2 bg-orange-300 text-md">
+          className="flex flex-col fixed top-0 bottom-0 left-0 right-0 bg-ink-900 bg-opacity-50 z-40">
+          <div className="flex flex-col self-end flex-grow w-full md:w-1/3 bg-cream-50">
+            <div className="flex justify-between items-center p-3 bg-terracotta-500 text-white text-md">
               <div>
                 <i className="fas fa-shopping-cart mr-1" aria-hidden="true" />
                 Cart
               </div>
-              <div onClick={toggleOpen}>
+              <div onClick={toggleOpen} className="cursor-pointer">
                 <i className="fas fa-times cursor-pointer" aria-hidden="true" />
               </div>
             </div>
@@ -128,7 +142,7 @@ export default function Cart({ refreshProducts, setAlertNotification }: CartProp
               onClick={() => {
                 void submitOrder();
               }}
-              className="flex justify-center items-center self-center m-3 p-2 bg-orange-300 rounded font-semibold uppercase text-sm">
+              className="flex justify-center items-center self-center m-3 px-6 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-full font-semibold uppercase tracking-wide text-sm transition-colors">
               Buy Now
             </button>
           </div>

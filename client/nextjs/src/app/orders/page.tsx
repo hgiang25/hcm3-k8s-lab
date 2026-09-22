@@ -8,53 +8,64 @@ import { getOrderHistory } from '@/utils/services';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const [orders, setOrders] = useState<models.Order[]>();
+  const [orders, setOrders] = useState<models.Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     (async () => {
-      setOrders(await getOrderHistory());
+      try {
+        const data = await getOrderHistory();
+        setOrders(data || []);
+      } catch (err) {
+        console.error('Failed to fetch order history:', err);
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
-
-  if (!orders) {
-    return;
-  }
 
   return (
     <>
       <Navbar path="orders" />
-      <main>
+      <main className="pt-14">
         <div className="max-w-screen-xl mx-auto p-6">
-          <h1 className="text-3xl">Your Orders</h1>
-          {orders.map((order) => {
-            return (
-              <div
-                key={order.orderId}
-                className="flex flex-col justify-start items-start my-4 w-full shadow-lg">
-                <div className="w-full flex flex-row justify-between items-start leading-6 xl:leading-5 text-gray-800 bg-gray-200 p-2">
-                  <div>
-                    <h5 className="text-md font-bold uppercase">Order</h5>
-                    <p className="text-sm">#{order.orderId}</p>
+          <h1 className="text-3xl font-display font-bold text-ink-800">Your Orders</h1>
+          {loading ? (
+            <p className="mt-4 text-ink-600">Loading your orders...</p>
+          ) : orders.length === 0 ? (
+            <p className="mt-4 text-ink-600">You have not placed any orders yet.</p>
+          ) : (
+            orders.map((order) => {
+              return (
+                <div
+                  key={order.orderId}
+                  className="flex flex-col justify-start items-start my-4 w-full rounded-lg overflow-hidden shadow-card bg-white">
+                  <div className="w-full flex flex-row justify-between items-start leading-6 xl:leading-5 text-ink-800 bg-terracotta-100 p-3">
+                    <div>
+                      <h5 className="text-md font-bold uppercase">Order</h5>
+                      <p className="text-sm">#{order.orderId}</p>
+                    </div>
+                    <div className="self-end">
+                      <h5 className="text-md font-bold uppercase">Placed</h5>
+                      <p className="text-sm">
+                        {stringDateToFormattedDate(order.createdOn)}
+                      </p>
+                    </div>
+                    <div className="self-end">
+                      <h5 className="text-md font-bold uppercase">Total</h5>
+                      <p className="text-sm">
+                        {toCurrency(orderTotal(order))}
+                      </p>
+                    </div>
                   </div>
-                  <div className="self-end">
-                    <h5 className="text-md font-bold uppercase">Placed</h5>
-                    <p className="text-sm">
-                      {stringDateToFormattedDate(order.createdOn)}
-                    </p>
-                  </div>
-                  <div className="self-end">
-                    <h5 className="text-md font-bold uppercase">Total</h5>
-                    <p className="text-sm">
-                      {toCurrency(orderTotal(order))}
-                    </p>
-                  </div>
+                  {order.products?.map((item) => (
+                    <OrderLineItem key={item.productId} item={item} />
+                  ))}
                 </div>
-                {order.products.map((item) => (
-                  <OrderLineItem key={item.productId} item={item} />
-                ))}
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </main>
     </>

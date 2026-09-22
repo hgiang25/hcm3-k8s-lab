@@ -32,13 +32,13 @@ export default function Search({ refreshProducts, searchPlaceHolder }: SearchPro
       className="order-last mb-0 pr-8"
       action="">
       <input
-        className="w-72 py-1 pl-3 pr-10 rounded-full focus:outline-0"
+        className="w-72 py-1.5 pl-4 pr-10 rounded-full bg-white border border-terracotta-100 text-sm text-ink-800 placeholder:text-ink-600/50 focus:outline-none focus:border-terracotta-300 transition-colors"
         type="text"
         placeholder={searchPlaceHolder ? searchPlaceHolder : 'Search..'}
         name="productDisplayName"
       />
       <button className="-ml-8 border-6 bg-trasparent" type="submit">
-        <i className="fa fa-search text-gray-400"></i>
+        <i className="fa fa-search text-terracotta-500"></i>
       </button>
     </form>
   );
