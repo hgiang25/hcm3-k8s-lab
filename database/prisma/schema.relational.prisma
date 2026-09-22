@@ -120,4 +120,13 @@ model StoreInventory{
   statusCode   Int?      @default(1)
 
   @@map("storeProducts")
+}model User {
+  userId    String    @id @default(uuid()) @map("_id")
+  username  String    @unique
+  password  String   
+  role      String    @default("USER")
+
+  createdOn DateTime? @default(now())
+
+  @@map("users")
 }

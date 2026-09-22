@@ -5,6 +5,7 @@ import { router } from './routes';
 import * as OrderRepo from '../../../common/models/order-repo';
 import { SERVER_CONFIG } from '../../../common/config/server-config';
 import { setRedis } from '../../../common/utils/redis/redis-wrapper';
+import { setPrisma } from '../../../common/utils/prisma/prisma-wrapper';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 app.listen(PORT, async () => {
   await setRedis(REDIS_URI);
+  await setPrisma();
   await OrderRepo.createRedisIndex();
 
   console.log(`Server is running at http://localhost:${PORT}`);

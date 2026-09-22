@@ -40,10 +40,11 @@ const init = async () => {
     await redisClient.connect();
 
     // check if database is already loaded
-    const checkDB = await redisClient.exists('database_loaded');
-    if (checkDB === 1) {
-      consoleLog('Database have been loaded, not reloading');
-    } else {
+    // const checkDB = await redisClient.exists('database_loaded');
+    // if (checkDB === 1) {
+    //   consoleLog('Database have been loaded, not reloading');
+    // } else {
+    if (true) {
       consoleLog(`Total database seeding steps: ${totalLogSeqCount}`);
 
       if (SEED_DB.PRODUCTS) {
