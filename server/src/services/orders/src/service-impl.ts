@@ -128,9 +128,9 @@ const addOrderToPrismaDB = async (order: OrderWithIncludes) => {
 
       products: {
         createMany: {
-          data: <Prisma.OrderProductCreateManyOrderInput[]>order.products
-        }
-      }
+          data: (order.products as Prisma.OrderProductCreateManyOrderInput[]),
+        },
+      },
     },
   });
 };
