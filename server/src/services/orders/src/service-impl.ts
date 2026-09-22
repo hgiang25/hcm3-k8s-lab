@@ -116,44 +116,19 @@ const addOrderToRedis = async (order: OrderWithIncludes) => {
   }
 };
 
-const addOrderToPrismaDB = async (order: OrderWithIncludes, orderAmount: number) => {
+const addOrderToPrismaDB = async (order: OrderWithIncludes) => {
   const prisma = getPrismaClient();
-
-  const orderProductData = (order.products || []).map((p) => ({
-    id: p.id || uuidv4(),
-    productId: p.productId,
-    productPrice: Math.round(Number(p.productPrice) || 0),
-    qty: Number(p.qty) || 1,
-    storeId: p.storeId || null,
-    storeName: p.storeName || null,
-    productData: p.productData || {},
-    createdBy: order.createdBy,
-    createdOn: order.createdOn || new Date(),
-    statusCode: DB_ROW_STATUS.ACTIVE,
-  }));
-
   await prisma.order.create({
     data: {
       orderId: order.orderId,
-      orderStatusCode: ORDER_STATUS.PAYMENT_SUCCESS,
-      potentialFraud: order.potentialFraud ?? false,
+      orderStatusCode: order.orderStatusCode,
+      potentialFraud: order.potentialFraud,
       userId: order.userId,
       createdBy: order.createdBy,
-      statusCode: DB_ROW_STATUS.ACTIVE,
 
       products: {
-        create: orderProductData,
-      },
-
-      Payment: {
-        create: {
-          paymentId: uuidv4(),
-          orderAmount: orderAmount,
-          paidAmount: Math.round(orderAmount),
-          orderStatusCode: ORDER_STATUS.PAYMENT_SUCCESS,
-          userId: order.userId,
-          createdBy: order.createdBy,
-          statusCode: DB_ROW_STATUS.ACTIVE,
+        createMany: {
+          data: (order.products as Prisma.OrderProductCreateManyOrderInput[]),
         },
       },
     },
@@ -181,7 +156,7 @@ const createOrder = async (
     const orderId = uuidv4();
 
     order.orderId = orderId;
-    order.orderStatusCode = ORDER_STATUS.PAYMENT_SUCCESS;
+    order.orderStatusCode = ORDER_STATUS.CREATED;
     order.userId = userId;
     order.createdBy = userId;
     order.createdOn = new Date();
@@ -193,18 +168,13 @@ const createOrder = async (
     const products = await getProductDetails(order);
     addProductDataToOrders(order, products);
 
-    let orderAmount = 0;
-    order.products?.forEach((product) => {
-      orderAmount += product.productPrice * product.qty;
-    });
-
     await addOrderToRedis(order);
 
     /**
      * In real world scenario : can use RDI/ redis gears/ any other database to database sync strategy for REDIS-> MongoDB  data transfer.
      * To keep it simple, adding  data to MongoDB manually in the same service
      */
-    await addOrderToPrismaDB(order, orderAmount);
+    await addOrderToPrismaDB(order);
 
     await streamLog({
       action: 'CREATE_ORDER',
@@ -214,6 +184,11 @@ const createOrder = async (
         persona: sessionData.persona,
         sessionId: sessionId,
       },
+    });
+
+    let orderAmount = 0;
+    order.products?.forEach((product) => {
+      orderAmount += product.productPrice * product.qty;
     });
 
     const orderDetails: Partial<IOrder> = {
