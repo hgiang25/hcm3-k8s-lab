@@ -3,37 +3,43 @@ name: Database Backup
 on:
   workflow_dispatch: # Manual trigger
   schedule:
-    - cron: '0 19 * * *' # 19:00 UTC = 02:00 UTC+7 (Vietnam)
+    - cron: '0 19 * * 6' # Saturday 19:00 UTC = Sunday 02:00 UTC+7 (Vietnam)
 
 env:
   BACKUP_RETENTION_DAYS: 30
 
 jobs:
-  backup-mongodb:
-    name: Backup MongoDB
+  backup-postgresql:
+    name: Backup PostgreSQL
     runs-on: self-hosted
 
     steps:
-      - name: Download MongoDB tools
+      - name: Install PostgreSQL client
         run: |
-          wget -q https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
-          tar -zxvf mongodb-database-tools-ubuntu2204-x86_64-100.9.4.tgz
-          echo "${PWD}/mongodb-database-tools-ubuntu2204-x86_64-100.9.4/bin" >> $GITHUB_PATH
+          if ! command -v pg_dump >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y postgresql-client
+          fi
 
       - name: Create backup directory
         run: mkdir -p backups
 
-      - name: Dump MongoDB database
+      - name: Dump PostgreSQL database
+        env:
+          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
-          echo "Starting MongoDB backup..."
+          echo "Starting PostgreSQL backup..."
 
-          # Sử dụng MONGO_IP thay cho MONGO_URL để giảm số lượng biến cần cấu hình
-          mongodump \
-            --uri="mongodb://${{ secrets.MONGO_USER }}:${{ secrets.MONGO_PASSWORD }}@${{ secrets.MONGO_IP }}:27017/dbFashion?authSource=admin" \
-            --gzip \
-            --archive="backups/mongodb.archive.gz"
+          pg_dump \
+            --host="${{ secrets.POSTGRES_IP }}" \
+            --port=5432 \
+            --username="${{ secrets.POSTGRES_USER }}" \
+            --dbname=dbFashion \
+            --format=custom \
+            --compress=9 \
+            --file=backups/postgresql.dump
 
-          echo "MongoDB backup completed."
+          echo "PostgreSQL backup completed."
 
       - name: Show backup size
         run: ls -lh backups/
@@ -49,28 +55,28 @@ jobs:
           TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 
           aws s3 cp \
-            backups/mongodb.archive.gz \
-            s3://${{ secrets.S3_BACKUP_BUCKET }}/mongodb/${TIMESTAMP}/mongodb.archive.gz \
+            backups/postgresql.dump \
+            s3://${{ secrets.S3_BACKUP_BUCKET }}/postgresql/${TIMESTAMP}/postgresql.dump \
             --endpoint-url=${{ secrets.S3_ENDPOINT }}
 
-          echo "MongoDB backup uploaded to S3."
+          echo "PostgreSQL backup uploaded to S3."
 
       - name: Cleanup old backups (older than ${{ env.BACKUP_RETENTION_DAYS }} days)
         run: |
           CUTOFF_DATE=$(date -d "-${{ env.BACKUP_RETENTION_DAYS }} days" +"%Y-%m-%d")
 
-          aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/mongodb/ --endpoint-url=${{ secrets.S3_ENDPOINT }} | while read -r line; do
+          aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/postgresql/ --endpoint-url=${{ secrets.S3_ENDPOINT }} | while read -r line; do
             FOLDER_DATE=$(echo "$line" | awk '{print $2}' | cut -d'/' -f1 | cut -d'_' -f1)
             if [[ "$FOLDER_DATE" < "$CUTOFF_DATE" ]]; then
               FOLDER_NAME=$(echo "$line" | awk '{print $2}')
               echo "Deleting old backup: $FOLDER_NAME"
-              aws s3 rm "s3://${{ secrets.S3_BACKUP_BUCKET }}/mongodb/${FOLDER_NAME}" --recursive --endpoint-url=${{ secrets.S3_ENDPOINT }}
+              aws s3 rm "s3://${{ secrets.S3_BACKUP_BUCKET }}/postgresql/${FOLDER_NAME}" --recursive --endpoint-url=${{ secrets.S3_ENDPOINT }}
             fi
           done
 
       - name: Upload backup as GitHub Artifact (fallback)
         uses: actions/upload-artifact@v4
         with:
-          name: mongodb-backup-${{ github.run_number }}
-          path: backups/mongodb.archive.gz
+          name: postgresql-backup-${{ github.run_number }}
+          path: backups/postgresql.dump
           retention-days: 7
