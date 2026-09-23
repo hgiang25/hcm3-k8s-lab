@@ -1,4 +1,7 @@
 tempo:
+  ingester:
+    max_block_duration: 1h
+    max_block_bytes: 52428800 # 50MB
   # Cấu hình storage backend của Tempo trỏ về S3
   storage:
     trace:

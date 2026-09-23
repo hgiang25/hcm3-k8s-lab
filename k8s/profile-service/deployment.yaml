@@ -15,8 +15,23 @@ spec:
       labels:
         app: profile-service
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: role
+                operator: In
+                values:
+                - app
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
       containers:
         - name: profile-service
+          securityContext:
+            allowPrivilegeEscalation: false
           image: ${CONTAINER_REGISTRY}/profile-service:latest
           ports:
             - containerPort: 3006

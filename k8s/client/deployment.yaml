@@ -15,8 +15,23 @@ spec:
       labels:
         app: client
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: role
+                operator: In
+                values:
+                - app
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
       containers:
         - name: client
+          securityContext:
+            allowPrivilegeEscalation: false
           image: ${CONTAINER_REGISTRY}/client:latest
           ports:
             - containerPort: 4200

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ecommerce-app-sa
+  namespace: ecommerce
+# Chìa khóa bảo mật: Cấm không cho tự động mount token (Thẻ từ) vào Pod
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ecommerce-app-role
+  namespace: ecommerce
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"] # Chỉ được quyền xem danh sách Pods, cấm mọi quyền ghi/xóa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ecommerce-app-rolebinding
+  namespace: ecommerce
+subjects:
+- kind: ServiceAccount
+  name: ecommerce-app-sa
+  namespace: ecommerce
+roleRef:
+  kind: Role
+  name: ecommerce-app-role
+  apiGroup: rbac.authorization.k8s.io

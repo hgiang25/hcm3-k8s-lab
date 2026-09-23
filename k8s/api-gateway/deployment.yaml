@@ -15,8 +15,28 @@ spec:
       labels:
         app: api-gateway
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: role
+                operator: In
+                values:
+                - app
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+      serviceAccountName: ecommerce-app-sa
+      initContainers:
+        - name: wait-for-identity
+          image: busybox:1.36
+          command: ['sh', '-c', 'echo "Waiting for digital-identity-service to start..."; until nc -z digital-identity-service 3000; do sleep 2; done; echo "Identity Service is ready!"']
       containers:
         - name: api-gateway
+          securityContext:
+            allowPrivilegeEscalation: false
           image: ${CONTAINER_REGISTRY}/api-gateway:latest
           ports:
             - containerPort: 3000

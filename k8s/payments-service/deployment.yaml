@@ -15,8 +15,23 @@ spec:
       labels:
         app: payments-service
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: role
+                operator: In
+                values:
+                - app
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
       containers:
         - name: payments-service
+          securityContext:
+            allowPrivilegeEscalation: false
           image: ${CONTAINER_REGISTRY}/payments-service:latest
           ports:
             - containerPort: 3004

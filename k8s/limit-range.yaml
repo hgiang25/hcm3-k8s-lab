@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: ecommerce-limit-range
+  namespace: ecommerce
+spec:
+  limits:
+  - default: # Bơm tự động Limit nếu DEV quên khai báo
+      cpu: 500m
+      memory: 512Mi
+    defaultRequest: # Bơm tự động Request nếu DEV quên khai báo
+      cpu: 100m
+      memory: 256Mi
+    max: # Trấn lột: Cấm không cho Pod nào được xin quá mức này
+      cpu: "1"
+      memory: 1Gi
+    min: # Cấm tạo Pod quá nhỏ
+      cpu: 50m
+      memory: 128Mi
+    type: Container
