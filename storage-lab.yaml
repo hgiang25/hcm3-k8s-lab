@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cmc-evs-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi    # Dung lượng ổ đĩa EVS muốn xin (vd: 10Gi)
+  # storageClassName: cinder-csi  # Điền tên StorageClass ở Bước 1 vào đây (nếu có default thì comment dòng này lại)
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: storage-test-pod
+  namespace: default
+  labels:
+    app: storage-test
+spec:
+  containers:
+  - name: app
+    image: busybox
+    command: ["/bin/sh", "-c", "sleep 3600"]
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+    volumeMounts:
+    - name: data-volume
+      mountPath: /data       # Thư mục được gắn ổ đĩa trong Pod
+  volumes:
+  - name: data-volume
+    persistentVolumeClaim:
+      claimName: cmc-evs-pvc
